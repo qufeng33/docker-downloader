@@ -1,9 +1,9 @@
 # Docker Downloader
-> 跨平台 Docker 镜像下载工具
+> 企业级跨平台 Docker 镜像下载工具
 
 ## 1. 项目概述 (Project Overview)
 
-Docker Downloader 是一个跨平台的桌面应用程序，专为简化 Docker 镜像的离线下载而设计。无论是公有仓库（如 Docker Hub）还是私有仓库，都能轻松查找、管理和下载 Docker 镜像，并将其保存为 `.tar.gz` 格式，方便在离线环境中使用 `docker load -i` 命令导入。
+Docker Downloader 是一个采用现代化架构设计的跨平台桌面应用程序，专为简化 Docker 镜像的离线下载而设计。基于 Electron + NestJS + Vue 3 的技术栈，提供企业级的稳定性和专业的用户体验。无论是公有仓库（如 Docker Hub）还是私有仓库，都能轻松查找、管理和下载 Docker 镜像，并将其保存为 `.tar.gz` 格式，方便在离线环境中使用 `docker load -i` 命令导入。
 
 ### 🎯 核心价值
 
@@ -11,23 +11,6 @@ Docker Downloader 是一个跨平台的桌面应用程序，专为简化 Docker 
 *   **多架构支持** - 清晰展示镜像支持的所有 CPU 架构（amd64、arm64 等）
 *   **私有仓库管理** - 统一管理多个私有仓库的访问凭证和下载需求
 *   **可视化下载** - 提供直观的图形界面和下载进度管理
-
-### 🚀 快速开始
-
-```bash
-# 克隆项目
-git clone https://github.com/qufeng33/docker-downloader.git
-cd docker-downloader
-
-# 安装依赖
-pnpm install
-
-# 开发模式运行
-pnpm run dev
-
-# 构建应用
-pnpm run build
-```
 
 ## 2. 核心功能 (Core Features)
 
@@ -44,7 +27,6 @@ pnpm run build
 *   **智能搜索：** 输入镜像名称快速查找（支持模糊搜索）
 *   **标签展示：** 列表形式展示镜像的所有可用 Tags
 *   **架构信息：** 每个 Tag 显示支持的 CPU 架构
-*   **离线缓存：** 缓存查询结果，提升使用体验
 
 ### 2.3. 镜像下载 (Image Download)
 
@@ -73,56 +55,98 @@ pnpm run build
 
 ## 3. 技术架构 (Technical Architecture)
 
-### 3.1. 技术栈选择
+### 3.1. 现代化技术栈
 
-我们采用现代化的 JavaScript 全栈方案，确保开发效率和应用性能：
+本项目采用业界领先的技术栈组合，确保代码质量、开发效率和应用性能：
 
+*   **工程化方案：** [pnpm Workspace](https://pnpm.io/workspaces) - 现代化 monorepo 管理
 *   **桌面框架：** [Electron.js](https://www.electronjs.org/) - 跨平台桌面应用开发
+*   **后端框架：** [NestJS](https://nestjs.com/) - 企业级 Node.js 框架
+*   **IPC 通信：** [@doubleshot/nest-electron](https://github.com/DoubleShot1024/nest-electron) - 类型安全的 IPC 解决方案
 *   **前端框架：** [Vue.js 3](https://vuejs.org/) + [TypeScript](https://www.typescriptlang.org/) - 现代化响应式界面
-*   **UI 组件：** [Element Plus](https://element-plus.org/) - 成熟的 Vue 3 组件库
+*   **UI 组件库：** [Element Plus](https://element-plus.org/) - 成熟稳定的 Vue 3 企业级组件库
 *   **状态管理：** [Pinia](https://pinia.vuejs.org/) - Vue 官方推荐状态管理
 *   **构建工具：** [Vite](https://vitejs.dev/) + [electron-builder](https://www.electron.build/) - 快速构建和打包
 
-### 3.2. 后端架构
+### 3.2. 架构设计理念
 
-**主进程采用 NestJS 企业级架构：**
-*   **[NestJS](https://nestjs.com/)** - 提供依赖注入、模块化、装饰器支持
+**Monorepo 模块化架构：**
+*   **包级别隔离** - 主进程、渲染进程、共享模块完全独立
+*   **依赖精确管理** - 避免不必要的依赖污染和体积膨胀
+*   **类型安全全链路** - 从主进程到渲染进程的完整 TypeScript 支持
+*   **增量构建优化** - 只重建变更的包，显著提升开发效率
+
+**企业级 NestJS 主进程：**
+*   **依赖注入容器** - 优雅管理服务间依赖关系
 *   **模块化设计** - Registry、Download、Auth、Packaging、Config 等独立模块
-*   **事件驱动** - 使用 `@nestjs/event-emitter` 处理下载进度等事件
-*   **安全存储** - Electron `safeStorage` API 加密存储敏感信息
+*   **装饰器驱动** - 使用 `@IpcHandle()` 等装饰器简化 IPC 定义
+*   **事件驱动架构** - 基于 `@nestjs/event-emitter` 处理下载进度等异步事件
+
+**类型安全 IPC 通信：**
+*   **自动类型生成** - @doubleshot/nest-electron 自动生成渲染进程类型定义
+*   **装饰器一致性** - `@IpcHandle()` 如同 `@Get()` 一样的开发体验
+*   **零样板代码** - 无需手动编写 IPC 桥接层
 
 ### 3.3. 架构优势
 
-*   **依赖注入：** 优雅管理服务间依赖关系
-*   **模块化：** 清晰的代码组织和职责分离
-*   **类型安全：** 全栈 TypeScript 支持
-*   **测试友好：** 完善的单元测试和集成测试支持
+*   **开发效率最大化：** 充分利用 NestJS 生态，零学习成本
+*   **类型安全保障：** 全链路 TypeScript 支持，编译时错误检查
+*   **模块化维护：** 清晰的包边界和职责分离
+*   **扩展性设计：** 支持多窗口、Worker 进程等复杂场景
+*   **企业级稳定性：** 成熟的技术栈组合，久经考验
 
 ## 4. 项目结构 (Project Structure)
 
 ```
 docker-downloader/
-├── src/
-│   ├── main/             # 主进程 (NestJS)
-│   │   ├── modules/      # 业务模块
-│   │   │   ├── registry/     # Registry API 通信
-│   │   │   ├── download/     # 下载管理
-│   │   │   ├── auth/         # 认证管理
-│   │   │   ├── packaging/    # 镜像打包
-│   │   │   └── config/       # 配置管理
-│   │   ├── shared/       # 共享模块
-│   │   ├── ipc/          # IPC 通信桥接
-│   │   └── preload.ts    # 预加载脚本
+├── packages/
+│   ├── main/                 # 主进程包 (NestJS)
+│   │   ├── src/
+│   │   │   ├── modules/      # 业务模块
+│   │   │   │   ├── registry/     # Registry API 通信
+│   │   │   │   ├── download/     # 下载管理
+│   │   │   │   ├── auth/         # 认证管理
+│   │   │   │   ├── packaging/    # 镜像打包
+│   │   │   │   └── config/       # 配置管理
+│   │   │   ├── controllers/  # IPC 控制器
+│   │   │   └── app.module.ts # 应用模块
+│   │   └── package.json
 │   │
-│   └── renderer/         # 渲染进程 (Vue.js)
-│       ├── components/   # Vue 组件
-│       ├── views/        # 页面组件
-│       ├── store/        # Pinia 状态管理
-│       └── router/       # 路由配置
+│   ├── renderer/             # 渲染进程包 (Vue 3)
+│   │   ├── src/
+│   │   │   ├── components/   # Vue 组件
+│   │   │   ├── views/        # 页面组件
+│   │   │   ├── store/        # Pinia 状态管理
+│   │   │   └── router/       # 路由配置
+│   │   └── package.json
+│   │
+│   ├── preload/              # 预加载脚本包
+│   │   ├── src/
+│   │   │   └── index.ts      # 预加载入口
+│   │   └── package.json
+│   │
+│   ├── shared/               # 共享工具包
+│   │   ├── src/
+│   │   │   ├── utils/        # 工具函数
+│   │   │   └── constants/    # 常量定义
+│   │   └── package.json
+│   │
+│   ├── types/                # 类型定义包
+│   │   ├── src/
+│   │   │   ├── api/          # API 接口类型
+│   │   │   ├── models/       # 数据模型
+│   │   │   └── events/       # 事件类型
+│   │   └── package.json
+│   │
+│   └── electron/             # Electron 配置包
+│       ├── src/
+│       │   └── main.ts       # Electron 主入口
+│       └── package.json
 │
-├── test/                 # 测试文件
-├── dist_electron/        # 构建输出
-└── package.json
+├── test/                     # 测试文件
+├── dist/                     # 构建输出
+├── pnpm-workspace.yaml       # pnpm workspace 配置
+└── package.json              # 根包配置
 ```
 
 ## 5. 安全性与可靠性 (Security & Reliability)
@@ -145,9 +169,9 @@ docker-downloader/
 ## 6. 用户体验 (User Experience)
 
 ### 6.1. 界面设计
-*   **现代化 UI：** 简洁直观的操作界面
+*   **企业级 UI：** 基于 Element Plus 的专业界面设计
 *   **主题支持：** 浅色/深色主题，跟随系统设置
-*   **响应式：** 适配不同屏幕尺寸
+*   **响应式布局：** 适配不同屏幕尺寸和分辨率
 
 ### 6.2. 操作体验
 *   **拖拽支持：** 文件拖拽到指定位置
@@ -155,26 +179,26 @@ docker-downloader/
 *   **托盘最小化：** 后台下载不干扰工作
 
 ### 6.3. 性能优化
-*   **虚拟滚动：** 大量数据列表优化
+*   **虚拟滚动：** Element Plus 虚拟化组件处理大量数据
 *   **懒加载：** 按需加载组件和数据
 *   **智能缓存：** 减少重复网络请求
 
 ## 7. 开发指南 (Development Guide)
 
 ### 7.1. 环境要求
-*   Node.js >= 16.0.0
-*   pnpm >= 8.0.0
+*   Node.js >= 22.0.0
+*   pnpm >= 10.0.0
 *   Git
 
 ### 7.2. 开发命令
 ```bash
-# 安装依赖
+# 安装所有包依赖
 pnpm install
 
-# 开发模式
+# 开发模式（并行启动所有包）
 pnpm run dev
 
-# 构建应用
+# 构建所有包
 pnpm run build
 
 # 运行测试
@@ -182,29 +206,48 @@ pnpm run test
 
 # 代码检查
 pnpm run lint
+
+# 包级别操作
+pnpm --filter @docker-downloader/main dev
+pnpm --filter @docker-downloader/renderer build
 ```
 
 ### 7.3. 核心实现要点
 
-**NestJS 集成：**
-```typescript
-// 主进程初始化
-const nestApp = await NestFactory.createApplicationContext(AppModule);
-const ipcBridge = new IpcBridge(nestApp);
+**Monorepo 包管理：**
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'packages/*'
 ```
 
-**IPC 通信：**
+**类型安全 IPC 通信：**
 ```typescript
-// 预加载脚本暴露 API
-contextBridge.exposeInMainWorld('electronAPI', {
-  getTags: (imageName: string) => ipcRenderer.invoke('registry:get-tags', imageName),
-  downloadImage: (imageInfo: ImageInfo) => ipcRenderer.invoke('download:start', imageInfo),
-});
+// packages/main/src/controllers/registry.controller.ts
+@Controller()
+export class RegistryController {
+  @IpcHandle('registry:getTags')
+  async getTags(@IpcBody() imageName: string): Promise<TagInfo[]> {
+    return this.registryService.getTags(imageName);
+  }
+}
+
+// packages/renderer 中自动生成类型安全的调用
+const tags = await window.electronAPI.registry.getTags(imageName);
+```
+
+**Element Plus 集成：**
+```typescript
+// packages/renderer/src/main.ts
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+
+app.use(ElementPlus)
 ```
 
 **安全存储：**
 ```typescript
-// 加密存储敏感信息
+// packages/main/src/modules/auth/auth.service.ts
 const encrypted = safeStorage.encryptString(password);
 const decrypted = safeStorage.decryptString(encrypted);
 ```
