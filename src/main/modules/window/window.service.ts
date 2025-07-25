@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { BrowserWindow } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
-import { ElectronLoggerService } from '../common/logger/electron-logger.service'
+import { ElectronLoggerService } from '../../common/logger/electron-logger.service'
 
 /**
  * 窗口管理服务
@@ -28,7 +28,7 @@ export class WindowService {
       show: false,
       autoHideMenuBar: true,
       titleBarStyle: 'default' as const,
-      icon: join(__dirname, '../../../resources/icon.png'),
+      icon: join(__dirname, '../../../../resources/icon.png'),
       webPreferences: {
         preload: join(__dirname, '../preload/index.js'),
         sandbox: false,

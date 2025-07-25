@@ -5,7 +5,7 @@ import { ElectronModule } from '@doubleshot/nest-electron'
 import { LoggerModule } from './common/logger/logger.module'
 import { WindowModule } from './modules/window/window.module'
 import { RegistryModule } from './modules/registry/registry.module'
-import { WindowService } from './services/window.service'
+import { WindowService } from './modules/window/window.service'
 import { ElectronLoggerService } from './common/logger/electron-logger.service'
 
 /**

@@ -1,5 +1,5 @@
 import { Module, Global } from '@nestjs/common'
-import { WindowService } from '../../services/window.service'
+import { WindowService } from './window.service'
 
 /**
  * 窗口管理模块
