@@ -48,7 +48,7 @@
 
 ## 第二阶段：IPC 通信机制建立
 
-- [ ] 6. 创建基础业务模块结构
+- [x] 6. 创建基础业务模块结构
   - 创建 RegistryModule 模块框架（不实现具体业务逻辑）
   - 创建对应的 Service、Controller 和基础 DTO 类
   - 在 AppModule 中注册新模块

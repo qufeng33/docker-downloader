@@ -4,6 +4,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter'
 import { ElectronModule } from '@doubleshot/nest-electron'
 import { LoggerModule } from './common/logger/logger.module'
 import { WindowModule } from './modules/window/window.module'
+import { RegistryModule } from './modules/registry/registry.module'
 import { WindowService } from './services/window.service'
 import { ElectronLoggerService } from './common/logger/electron-logger.service'
 
@@ -17,6 +18,9 @@ import { ElectronLoggerService } from './common/logger/electron-logger.service'
 
     // 窗口管理模块
     WindowModule,
+
+    // 仓库管理模块
+    RegistryModule,
 
     // 全局配置模块
     ConfigModule.forRoot({
