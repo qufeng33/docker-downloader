@@ -1,8 +1,15 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
-const api = {}
+const api = {
+  // Registry 相关 API
+  registry: {
+    ping: () => ipcRenderer.invoke('registry/ping'),
+    getStatus: () => ipcRenderer.invoke('registry/status'),
+    test: (data: unknown) => ipcRenderer.invoke('registry/test', data)
+  }
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
