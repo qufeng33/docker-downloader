@@ -11,7 +11,7 @@
   - **测试方法**: 运行 `pnpm install && pnpm run typecheck` 验证依赖完整性
   - _需求: 1.1, 1.3, 5.1, 5.2, 5.4, 6.5_
 
-- [-] 2. 配置 electron-vite 构建系统
+- [x] 2. 配置 electron-vite 构建系统
   - 更新 electron.vite.config.ts 支持新的别名配置
   - 配置 TypeScript 编译选项
   - 设置开发环境和生产环境的差异化配置
@@ -19,7 +19,7 @@
   - **测试方法**: 运行 `pnpm run build` 验证构建流程，检查别名导入是否正常解析
   - _需求: 6.1, 6.2, 6.5_
 
-- [ ] 3. 创建 NestJS 微服务启动框架
+- [-] 3. 创建 NestJS 微服务启动框架
   - 创建 bootstrap.ts 文件实现 createMicroservice 启动逻辑
   - 实现 ElectronIpcTransport 传输策略配置
   - 创建基础的 AppModule 根模块

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Context_7__resolve-library-id",
+      "mcp__Context_7__get-library-docs",
+      "Bash(pnpm run:*)",
+      "Bash(timeout 10s pnpm dev)",
+      "Bash(true)",
+      "Bash(mkdir:*)"
+    ],
+    "deny": []
+  }
+}
