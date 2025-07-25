@@ -37,7 +37,10 @@ import { ElectronLoggerService } from './common/logger/electron-logger.service'
 
     // Electron 模块配置
     ElectronModule.registerAsync({
-      useFactory: WindowService.createMainWindowFactory,
+      useFactory: (windowService: WindowService) => {
+        return windowService.createMainWindow()
+      },
+      inject: [WindowService],
       isGlobal: true
     })
   ],

@@ -37,7 +37,7 @@
   - **测试方法**: 启动应用后窗口正常显示，关闭窗口应用正常退出，检查日志无错误信息
   - _需求: 1.4, 6.1_
 
-- [ ] 5. 配置 ElectronModule 窗口管理
+- [x] 5. 配置 ElectronModule 窗口管理
   - 在 AppModule 中配置 ElectronModule.registerAsync
   - 实现 BrowserWindow 创建工厂函数
   - 配置窗口基础属性和安全设置

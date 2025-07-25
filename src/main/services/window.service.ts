@@ -14,32 +14,36 @@ export class WindowService {
   private mainWindow: BrowserWindow | null = null
 
   /**
-   * 创建主窗口的静态工厂方法
-   * 用于 ElectronModule 配置
-   */
-  static createMainWindowFactory(): BrowserWindow {
-    const windowService = new WindowService()
-    return windowService.createMainWindow()
-  }
-
-  /**
    * 创建主窗口
    */
   createMainWindow(): BrowserWindow {
     this.logger.info('创建主窗口...')
 
-    this.mainWindow = new BrowserWindow({
+    // 窗口配置
+    const windowConfig = {
       width: 1200,
       height: 800,
+      minWidth: 800,
+      minHeight: 600,
       show: false,
       autoHideMenuBar: true,
+      titleBarStyle: 'default' as const,
+      icon: join(__dirname, '../../../resources/icon.png'),
       webPreferences: {
         preload: join(__dirname, '../preload/index.js'),
         sandbox: false,
         contextIsolation: true,
-        nodeIntegration: false
+        nodeIntegration: false,
+        webSecurity: true,
+        allowRunningInsecureContent: false,
+        experimentalFeatures: false,
+        enableRemoteModule: false,
+        // 开发环境允许开发者工具
+        devTools: is.dev
       }
-    })
+    }
+
+    this.mainWindow = new BrowserWindow(windowConfig)
 
     this.setupWindowEvents()
     this.loadWindowContent()
@@ -85,13 +89,21 @@ export class WindowService {
   private loadWindowContent(): void {
     if (!this.mainWindow) return
 
-    // 开发环境加载开发服务器，生产环境加载本地文件
+    // 根据环境加载不同内容
     if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-      this.logger.info('开发环境：加载开发服务器')
+      this.logger.info('开发环境：加载开发服务器 -', process.env['ELECTRON_RENDERER_URL'])
       this.mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+
+      // 开发环境下打开开发者工具
+      if (is.dev) {
+        this.mainWindow.webContents.openDevTools()
+      }
     } else {
       this.logger.info('生产环境：加载本地文件')
-      this.mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+      const indexPath = join(__dirname, '../renderer/index.html')
+      this.mainWindow.loadFile(indexPath).catch((err) => {
+        this.logger.error('加载本地文件失败:', err)
+      })
     }
   }
 }
