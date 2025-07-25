@@ -19,7 +19,7 @@
   - **测试方法**: 运行 `pnpm run build` 验证构建流程，检查别名导入是否正常解析
   - _需求: 6.1, 6.2, 6.5_
 
-- [-] 3. 创建 NestJS 微服务启动框架
+- [x] 3. 创建 NestJS 微服务启动框架
   - 创建 bootstrap.ts 文件实现 createMicroservice 启动逻辑
   - 实现 ElectronIpcTransport 传输策略配置
   - 创建基础的 AppModule 根模块
