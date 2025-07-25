@@ -2,7 +2,7 @@
 
 ## 第一阶段：基础架构搭建
 
-- [ ] 1. 安装和配置核心依赖
+- [x] 1. 安装和配置核心依赖
   - 安装 NestJS 核心依赖包（@nestjs/core, @nestjs/common, @nestjs/microservices）
   - 安装 @doubleshot/nest-electron 和相关依赖
   - 安装 Vue 3 生态依赖（element-plus, pinia, vue-router）
@@ -11,7 +11,7 @@
   - **测试方法**: 运行 `pnpm install && pnpm run typecheck` 验证依赖完整性
   - _需求: 1.1, 1.3, 5.1, 5.2, 5.4, 6.5_
 
-- [ ] 2. 配置 electron-vite 构建系统
+- [-] 2. 配置 electron-vite 构建系统
   - 更新 electron.vite.config.ts 支持新的别名配置
   - 配置 TypeScript 编译选项
   - 设置开发环境和生产环境的差异化配置
