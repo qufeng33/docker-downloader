@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { BrowserWindow } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
-import { ElectronLoggerService } from '../../common/logger/electron-logger.service'
 
 /**
  * 窗口管理服务
@@ -10,14 +9,14 @@ import { ElectronLoggerService } from '../../common/logger/electron-logger.servi
  */
 @Injectable()
 export class WindowService {
-  private readonly logger = new ElectronLoggerService().createScopedLogger('WindowService')
+  private readonly logger = new Logger(WindowService.name)
   private mainWindow: BrowserWindow | null = null
 
   /**
    * 创建主窗口
    */
   createMainWindow(): BrowserWindow {
-    this.logger.info('创建主窗口...')
+    this.logger.log('创建主窗口...')
 
     // 窗口配置
     const windowConfig = {
@@ -65,17 +64,17 @@ export class WindowService {
     if (!this.mainWindow) return
 
     this.mainWindow.on('ready-to-show', () => {
-      this.logger.info('主窗口准备就绪，显示窗口')
+      this.logger.log('主窗口准备就绪，显示窗口')
       this.mainWindow?.show()
     })
 
     this.mainWindow.on('closed', () => {
-      this.logger.info('主窗口已关闭')
+      this.logger.log('主窗口已关闭')
       this.mainWindow = null
     })
 
     this.mainWindow.webContents.setWindowOpenHandler((details) => {
-      this.logger.info('拦截外部链接:', details.url)
+      this.logger.log('拦截外部链接:', details.url)
       import('electron').then(({ shell }) => {
         shell.openExternal(details.url)
       })
@@ -91,7 +90,7 @@ export class WindowService {
 
     // 根据环境加载不同内容
     if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-      this.logger.info('开发环境：加载开发服务器 -', process.env['ELECTRON_RENDERER_URL'])
+      this.logger.log('开发环境：加载开发服务器 -', process.env['ELECTRON_RENDERER_URL'])
       this.mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
 
       // 开发环境下打开开发者工具
@@ -99,7 +98,7 @@ export class WindowService {
         this.mainWindow.webContents.openDevTools()
       }
     } else {
-      this.logger.info('生产环境：加载本地文件')
+      this.logger.log('生产环境：加载本地文件')
       const indexPath = join(__dirname, '../renderer/index.html')
       this.mainWindow.loadFile(indexPath).catch((err) => {
         this.logger.error('加载本地文件失败:', err)
