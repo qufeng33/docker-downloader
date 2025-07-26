@@ -82,6 +82,11 @@ electron-builder-output/
 # TypeScript 编译输出
 *.tsbuildinfo
 
+# 自动生成的类型文件
+src/renderer/src/auto-imports.d.ts
+src/renderer/src/components.d.ts
+.eslintrc-auto-import.json
+
 # Vue 相关
 .nuxt/
 .output/

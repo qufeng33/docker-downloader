@@ -1,6 +1,9 @@
 import { resolve } from 'path'
 import { defineConfig, externalizeDepsPlugin, swcPlugin } from 'electron-vite'
 import vue from '@vitejs/plugin-vue'
+import AutoImport from 'unplugin-auto-import/vite'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
 export default defineConfig({
   main: {
@@ -35,13 +38,27 @@ export default defineConfig({
         '@shared': resolve('src/shared')
       }
     },
-    plugins: [vue()],
+    plugins: [
+      vue(),
+      AutoImport({
+        resolvers: [ElementPlusResolver()],
+        imports: ['vue', 'vue-router', 'pinia'],
+        dts: resolve('src/renderer/src/auto-imports.d.ts'),
+        eslintrc: {
+          enabled: true,
+          filepath: '.eslintrc-auto-import.json'
+        }
+      }),
+      Components({
+        resolvers: [ElementPlusResolver()],
+        dts: resolve('src/renderer/src/components.d.ts')
+      })
+    ],
     build: {
       rollupOptions: {
         output: {
-          // 为 Vue 3 和 Element Plus 优化 chunk 分割
+          // 优化后的 chunk 分割，移除 element-plus 手动分组（自动 tree-shaking）
           manualChunks: {
-            'element-plus': ['element-plus'],
             'vue-ecosystem': ['vue', 'vue-router', 'pinia']
           }
         }
