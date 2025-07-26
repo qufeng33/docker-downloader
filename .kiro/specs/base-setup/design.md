@@ -18,17 +18,20 @@
 ### 实施阶段划分
 
 #### 第一阶段：基础架构搭建
+
 - 核心依赖安装和配置
 - NestJS 微服务基础框架
 - 最简单的 IPC 通信验证
 - Vue 3 + Element Plus 基础界面
 
 #### 第二阶段：核心模块简化实现
+
 - 基础的模块结构搭建
 - 简化的业务逻辑实现
 - 基本的错误处理机制
 
 #### 第三阶段：功能完善和优化
+
 - 完整的业务功能实现
 - 性能优化和用户体验提升
 - 高级特性和扩展功能
@@ -47,32 +50,32 @@ graph TB
             B --> C[AppModule - 根模块]
             C --> D[ElectronModule - 窗口管理]
             C --> E[业务模块集合]
-            
+
             subgraph "业务模块"
                 E --> F[RegistryModule - 仓库管理]
                 E --> G[DownloadModule - 下载管理]
                 E --> H[AuthModule - 认证模块]
                 E --> I[ConfigModule - 配置管理]
             end
-            
+
             subgraph "共享模块"
                 J[LoggerModule - 日志服务]
                 K[SharedModule - 通用工具]
             end
         end
-        
+
         subgraph "预加载脚本 (Preload)"
             L[index.ts - API 暴露]
             L --> M[types.d.ts - 类型定义]
         end
-        
+
         subgraph "渲染进程 (Renderer)"
             N[main.ts - Vue 应用入口]
             N --> O[App.vue - 根组件]
             O --> P[Router - 路由管理]
             O --> Q[Pinia - 状态管理]
             O --> R[Element Plus - UI 组件]
-            
+
             subgraph "业务层"
                 S[Services - 业务服务]
                 T[Views - 页面组件]
@@ -80,7 +83,7 @@ graph TB
             end
         end
     end
-    
+
     A -.-> L
     L -.-> N
     F --> L
@@ -92,6 +95,7 @@ graph TB
 ### 技术栈选择
 
 #### 主进程技术栈
+
 - **NestJS 11.x**: 企业级 Node.js 框架，提供依赖注入和模块化架构
 - **@doubleshot/nest-electron 0.2.8**: NestJS 与 Electron 的集成解决方案
 - **@nestjs/microservices**: 微服务支持，用于 IPC 传输
@@ -99,6 +103,7 @@ graph TB
 - **reflect-metadata**: 装饰器元数据支持
 
 #### 渲染进程技术栈
+
 - **Vue 3.5.x**: 现代化前端框架，使用 Composition API
 - **Element Plus**: 企业级 Vue 3 UI 组件库
 - **Pinia**: Vue 3 官方状态管理库
@@ -106,6 +111,7 @@ graph TB
 - **TypeScript 5.8.x**: 类型安全支持
 
 #### 构建和开发工具
+
 - **electron-vite 4.x**: Electron 应用构建工具
 - **Vite 7.x**: 快速构建工具
 - **pnpm**: 高效包管理器
@@ -121,16 +127,15 @@ graph TB
 // src/main/bootstrap.ts
 export async function bootstrap() {
   await app.whenReady()
-  
+
   // 配置日志系统
   configureLogger()
-  
+
   // 创建 NestJS 微服务
-  const nestApp = await NestFactory.createMicroservice<MicroserviceOptions>(
-    AppModule,
-    { strategy: new ElectronIpcTransport() }
-  )
-  
+  const nestApp = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+    strategy: new ElectronIpcTransport()
+  })
+
   await nestApp.listen()
   return nestApp
 }
@@ -167,7 +172,7 @@ export class ModuleController {
   async handleMethod(@Payload() data: DTO, @Ctx() context: IpcContext) {
     // 处理逻辑
   }
-  
+
   @IpcOn('event-name')
   handleEvent(@Payload() data: DTO) {
     // 事件处理
@@ -195,16 +200,12 @@ interface IpcChannels {
 // src/preload/index.ts
 const api = {
   registry: {
-    searchImages: (query: SearchQuery) => 
-      ipcRenderer.invoke('registry/search-images', query),
-    getTags: (imageName: string) => 
-      ipcRenderer.invoke('registry/get-tags', imageName)
+    searchImages: (query: SearchQuery) => ipcRenderer.invoke('registry/search-images', query),
+    getTags: (imageName: string) => ipcRenderer.invoke('registry/get-tags', imageName)
   },
   download: {
-    start: (request: DownloadRequest) => 
-      ipcRenderer.invoke('download/start', request),
-    onProgress: (callback: ProgressCallback) => 
-      ipcRenderer.on('download/progress', callback)
+    start: (request: DownloadRequest) => ipcRenderer.invoke('download/start', request),
+    onProgress: (callback: ProgressCallback) => ipcRenderer.on('download/progress', callback)
   }
 }
 
@@ -231,7 +232,7 @@ app.mount('#app')
 export const useRegistryStore = defineStore('registry', () => {
   const images = ref<ImageInfo[]>([])
   const loading = ref(false)
-  
+
   const searchImages = async (query: SearchQuery) => {
     loading.value = true
     try {
@@ -240,7 +241,7 @@ export const useRegistryStore = defineStore('registry', () => {
       loading.value = false
     }
   }
-  
+
   return { images, loading, searchImages }
 })
 ```
@@ -331,13 +332,19 @@ interface RegistryConfig {
 ```typescript
 // 自定义错误类型
 export class RegistryError extends Error {
-  constructor(message: string, public code: string) {
+  constructor(
+    message: string,
+    public code: string
+  ) {
     super(message)
   }
 }
 
 export class DownloadError extends Error {
-  constructor(message: string, public taskId: string) {
+  constructor(
+    message: string,
+    public taskId: string
+  ) {
     super(message)
   }
 }
@@ -352,10 +359,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       code: exception.code || 'UNKNOWN_ERROR',
       timestamp: new Date().toISOString()
     }
-    
+
     // 记录错误日志
     logger.error('IPC Error:', error)
-    
+
     // 返回用户友好的错误信息
     return { success: false, error }
   }
@@ -391,15 +398,15 @@ const handleApiError = (error: any) => {
 // 主进程服务测试
 describe('RegistryService', () => {
   let service: RegistryService
-  
+
   beforeEach(async () => {
     const module = await Test.createTestingModule({
       providers: [RegistryService]
     }).compile()
-    
+
     service = module.get<RegistryService>(RegistryService)
   })
-  
+
   it('should search images successfully', async () => {
     const result = await service.searchImages({ keyword: 'nginx' })
     expect(result).toBeDefined()
@@ -414,17 +421,16 @@ describe('RegistryService', () => {
 // IPC 通信集成测试
 describe('IPC Communication', () => {
   let app: INestMicroservice
-  
+
   beforeAll(async () => {
     app = await NestFactory.createMicroservice(AppModule, {
       strategy: new ElectronIpcTransport()
     })
     await app.listen()
   })
-  
+
   it('should handle registry search request', async () => {
-    const result = await app.get(RegistryController)
-      .searchImages({ keyword: 'test' })
+    const result = await app.get(RegistryController).searchImages({ keyword: 'test' })
     expect(result).toBeDefined()
   })
 })
