@@ -24,6 +24,7 @@
     "@doubleshot/nest-electron": "^0.2.8",
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
+    "@element-plus/icons-vue": "^2.3.1",
     "@nestjs/common": "^11.1.5",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.5",

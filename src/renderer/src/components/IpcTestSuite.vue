@@ -209,18 +209,63 @@ const testSuite = ref<TestItem[]>([
   {
     id: 'user-validation-failure',
     name: '用户验证失败测试',
-    description: '验证无效用户数据的验证功能',
+    description: '验证业务规则失败的用户数据',
     testFn: async () => {
+      // 使用通过 DTO 验证但违反业务规则的数据
       const invalidUserData: UserInfoDto = {
-        name: 'A', // 太短
-        email: 'invalid-email', // 无效邮箱
-        age: 15 // 年龄不够
+        name: '测试用户', // DTO 验证通过（长度合规）
+        email: 'test@temp.com', // DTO 验证通过（邮箱格式正确），但业务规则拒绝（包含 temp）
+        age: 16, // DTO 验证通过（1-120范围内），但业务规则拒绝（小于18）
+        hobbies: ['测试']
       }
       const result = await window.api.registry.validateUser(invalidUserData)
       if (result.valid || result.errors.length === 0) {
-        throw new Error('无效用户数据验证应该失败')
+        throw new Error('违反业务规则的用户数据验证应该失败')
+      }
+      // 验证具体的错误信息
+      const hasAgeError = result.errors.some((error) => error.includes('18岁'))
+      const hasEmailError = result.errors.some((error) => error.includes('临时邮箱'))
+      if (!hasAgeError || !hasEmailError) {
+        throw new Error(`期望的业务规则错误未找到。实际错误: ${result.errors.join(', ')}`)
       }
       return result
+    },
+    status: 'pending'
+  },
+  {
+    id: 'dto-validation-failure',
+    name: 'DTO 验证失败测试',
+    description: '验证输入数据格式验证功能',
+    testFn: async () => {
+      try {
+        // 使用不符合 DTO 格式要求的数据
+        const invalidUserData = {
+          name: 'A', // 太短（要求最少2个字符）
+          email: 'invalid-email', // 无效邮箱格式
+          age: 200, // 超出范围（最大120）
+          hobbies: ['测试']
+        }
+        await window.api.registry.validateUser(invalidUserData as UserInfoDto)
+        // 如果到这里说明没有抛出异常，测试失败
+        throw new Error('DTO 验证应该抛出异常')
+      } catch (error) {
+        // 验证是否是预期的验证错误
+        if (error instanceof Error && error.message.includes('DTO 验证应该抛出异常')) {
+          throw error // 重新抛出测试失败
+        }
+        // 验证错误信息是否包含预期内容
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        if (!errorMessage.includes('验证失败') && !errorMessage.includes('validation')) {
+          throw new Error(`期望验证错误，但得到: ${errorMessage}`)
+        }
+        // 返回错误信息作为测试结果
+        return {
+          testType: 'DTO验证',
+          caught: true,
+          error: errorMessage,
+          note: '成功捕获 DTO 验证错误'
+        }
+      }
     },
     status: 'pending'
   },
