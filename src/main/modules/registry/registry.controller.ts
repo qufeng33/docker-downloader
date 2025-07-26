@@ -1,25 +1,17 @@
-import { Controller } from '@nestjs/common'
+import { Controller, Logger } from '@nestjs/common'
 import { IpcHandle } from '@doubleshot/nest-electron'
 import { Payload } from '@nestjs/microservices'
 import { RegistryService } from './registry.service'
-import { ElectronLoggerService } from '../../common/logger/electron-logger.service'
+import { ImageSearchDto, ComplexDataDto, UserInfoDto } from './registry.dto'
 
-/**
- * 仓库管理控制器
- * 处理渲染进程发送的仓库相关 IPC 请求
- */
 @Controller('registry')
 export class RegistryController {
-  private readonly logger = new ElectronLoggerService().createScopedLogger('RegistryController')
+  private readonly logger = new Logger(RegistryController.name)
 
   constructor(private readonly registryService: RegistryService) {
-    this.logger.info('RegistryController 初始化完成')
+    this.logger.log('RegistryController 初始化完成')
   }
 
-  /**
-   * 获取仓库服务状态
-   * IPC 通道: registry/status
-   */
   @IpcHandle('status')
   async getStatus(): Promise<{
     status: string
@@ -27,7 +19,6 @@ export class RegistryController {
     timestamp: string
   }> {
     this.logger.debug('处理获取状态请求')
-
     try {
       const result = this.registryService.getServiceStatus()
       this.logger.debug('状态获取成功:', result)
@@ -38,10 +29,6 @@ export class RegistryController {
     }
   }
 
-  /**
-   * 测试数据处理
-   * IPC 通道: registry/test
-   */
   @IpcHandle('test')
   async testProcess(@Payload() data: unknown): Promise<{
     success: boolean
@@ -49,9 +36,8 @@ export class RegistryController {
     processedAt: string
   }> {
     this.logger.debug('处理测试请求，数据:', data)
-
     try {
-      const result = this.registryService.processTestData(data)
+      const result = this.registryService.processTestData(data as Record<string, unknown>)
       this.logger.debug('测试处理成功:', result)
       return result
     } catch (error) {
@@ -60,10 +46,6 @@ export class RegistryController {
     }
   }
 
-  /**
-   * Ping 测试方法
-   * IPC 通道: registry/ping
-   */
   @IpcHandle('ping')
   async ping(): Promise<{
     message: string
@@ -71,11 +53,96 @@ export class RegistryController {
     serverTime: number
   }> {
     this.logger.debug('处理 ping 请求')
-
     return {
       message: 'pong from RegistryController',
       timestamp: new Date().toISOString(),
       serverTime: Date.now()
+    }
+  }
+
+  @IpcHandle('validate-user')
+  async validateUser(@Payload() userData: UserInfoDto): Promise<{
+    valid: boolean
+    errors: string[]
+    data?: unknown
+  }> {
+    this.logger.debug('处理用户验证请求:', userData)
+    try {
+      const result = this.registryService.validateUserInfo(userData)
+      this.logger.debug('用户验证成功:', result)
+      return result
+    } catch (error) {
+      this.logger.error('用户验证失败:', error)
+      throw error
+    }
+  }
+
+  @IpcHandle('search-images')
+  async searchImages(@Payload() searchData: ImageSearchDto): Promise<{
+    success: boolean
+    data: unknown
+    processedAt: string
+  }> {
+    this.logger.debug('处理镜像搜索请求:', searchData)
+    try {
+      const result = this.registryService.searchImages(searchData)
+      this.logger.debug('镜像搜索成功:', result)
+      return result
+    } catch (error) {
+      this.logger.error('镜像搜索失败:', error)
+      throw error
+    }
+  }
+
+  @IpcHandle('complex-data')
+  async processComplexData(@Payload() complexData: ComplexDataDto): Promise<{
+    success: boolean
+    data: unknown
+    processedAt: string
+  }> {
+    this.logger.debug('处理复杂数据请求:', complexData)
+    try {
+      const result = this.registryService.processComplexData(complexData)
+      this.logger.debug('复杂数据处理成功:', result)
+      return result
+    } catch (error) {
+      this.logger.error('复杂数据处理失败:', error)
+      throw error
+    }
+  }
+
+  @IpcHandle('throw-error')
+  async throwError(@Payload() errorType: string): Promise<never> {
+    this.logger.debug('处理错误测试请求:', errorType)
+    switch (errorType) {
+      case 'validation':
+        throw new Error('这是一个验证错误测试')
+      case 'business':
+        throw new Error('这是一个业务逻辑错误测试')
+      case 'timeout':
+        throw new Error('这是一个超时错误测试')
+      default:
+        throw new Error('这是一个通用错误测试')
+    }
+  }
+
+  @IpcHandle('async-operation')
+  async asyncOperation(@Payload() delay: number): Promise<{
+    success: boolean
+    data: unknown
+    processedAt: string
+  }> {
+    this.logger.debug('处理异步操作请求，延迟:', delay)
+    if (typeof delay !== 'number' || delay < 0 || delay > 10000) {
+      throw new Error('延迟时间必须在 0-10000ms 之间')
+    }
+    try {
+      const result = await this.registryService.performAsyncOperation(delay)
+      this.logger.debug('异步操作完成:', result)
+      return result
+    } catch (error) {
+      this.logger.error('异步操作失败:', error)
+      throw error
     }
   }
 }

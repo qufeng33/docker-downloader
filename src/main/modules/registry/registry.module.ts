@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common'
 import { RegistryService } from './registry.service'
 import { RegistryController } from './registry.controller'
-import { ElectronLoggerService } from '../../common/logger/electron-logger.service'
 
 /**
  * 仓库管理模块
@@ -12,10 +11,4 @@ import { ElectronLoggerService } from '../../common/logger/electron-logger.servi
   providers: [RegistryService],
   exports: [RegistryService]
 })
-export class RegistryModule {
-  private readonly logger = new ElectronLoggerService().createScopedLogger('RegistryModule')
-
-  constructor() {
-    this.logger.info('RegistryModule 初始化完成')
-  }
-}
+export class RegistryModule {}

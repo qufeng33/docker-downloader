@@ -6,6 +6,7 @@ import { AppModule } from './app.module'
 import { initializeLogging, bootstrapLogger } from './modules/logger/logger.config'
 import { LoggerService } from './modules/logger/logger.service'
 import type { INestMicroservice } from '@nestjs/common'
+import { ValidationPipe } from './common/pipes/validation.pipe'
 
 /**
  * 启动 NestJS 微服务应用
@@ -29,6 +30,9 @@ export async function bootstrap(): Promise<INestMicroservice> {
 
     // 用 DI 容器中的 LoggerService 实例替换掉临时日志器
     nestApp.useLogger(nestApp.get(LoggerService))
+
+    // 全局使用验证管道
+    nestApp.useGlobalPipes(new ValidationPipe())
 
     // 启动微服务
     await nestApp.listen()
