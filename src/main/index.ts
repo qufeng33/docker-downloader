@@ -1,13 +1,15 @@
+/// <reference types="electron-vite/node" />
+
 import { app, BrowserWindow } from 'electron'
 import { electronApp, optimizer } from '@electron-toolkit/utils'
 import 'reflect-metadata'
 import { bootstrap } from './bootstrap'
-import { ElectronLoggerService } from './common/logger/electron-logger.service'
+import { Logger } from '@nestjs/common'
 import type { INestMicroservice } from '@nestjs/common'
 
 // 应用生命周期管理
 let nestApp: INestMicroservice | null = null
-const appLogger = new ElectronLoggerService().createScopedLogger('App')
+const appLogger = new Logger('App')
 
 /**
  * 应用启动入口
@@ -28,11 +30,11 @@ async function startApplication(): Promise<void> {
     // macOS 激活处理
     app.on('activate', function () {
       if (BrowserWindow.getAllWindows().length === 0) {
-        appLogger.info('macOS 激活：重新创建窗口')
+        appLogger.log('macOS 激活：重新创建窗口')
       }
     })
 
-    appLogger.info('应用启动完成')
+    appLogger.log('应用启动完成')
   } catch (error) {
     appLogger.error('应用启动失败:', error instanceof Error ? error.stack : String(error))
     app.quit()
@@ -44,7 +46,7 @@ app.whenReady().then(startApplication)
 
 // 当所有窗口关闭时退出应用（macOS 除外）
 app.on('window-all-closed', () => {
-  appLogger.info('所有窗口已关闭')
+  appLogger.log('所有窗口已关闭')
   if (process.platform !== 'darwin') {
     app.quit()
   }
@@ -52,11 +54,11 @@ app.on('window-all-closed', () => {
 
 // 应用即将退出时的清理工作
 app.on('before-quit', async () => {
-  appLogger.info('应用即将退出，执行清理工作...')
+  appLogger.log('应用即将退出，执行清理工作...')
   if (nestApp) {
     try {
       await nestApp.close()
-      appLogger.info('NestJS 微服务已关闭')
+      appLogger.log('NestJS 微服务已关闭')
     } catch (error) {
       appLogger.error(
         '关闭 NestJS 微服务时出错:',

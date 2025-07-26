@@ -3,41 +3,41 @@ import { MicroserviceOptions } from '@nestjs/microservices'
 import { ElectronIpcTransport } from '@doubleshot/nest-electron'
 import { app } from 'electron'
 import { AppModule } from './app.module'
-import { ElectronLoggerService } from './common/logger/electron-logger.service'
+import { initializeLogging, bootstrapLogger } from './modules/logger/logger.config'
+import { LoggerService } from './modules/logger/logger.service'
 import type { INestMicroservice } from '@nestjs/common'
 
 /**
  * 启动 NestJS 微服务应用
  */
 export async function bootstrap(): Promise<INestMicroservice> {
-  // 创建启动阶段的日志器
-  const bootstrapLogger = new ElectronLoggerService()
+  // 1. 在所有操作之前，先初始化底层日志系统
+  initializeLogging()
 
   try {
     // 等待 Electron 应用准备就绪
     await app.whenReady()
 
-    bootstrapLogger.log('开始启动 NestJS 微服务应用...', 'Bootstrap')
+    bootstrapLogger.info('开始启动 NestJS 微服务应用...')
 
-    // 创建 NestJS 微服务应用，使用自定义日志器
+    // 创建 NestJS 微服务应用，使用临时的引导日志器
     const nestApp = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
       strategy: new ElectronIpcTransport(),
-      logger: bootstrapLogger, // 使用统一的日志器
-      bufferLogs: true // 缓冲日志直到应用完全启动
+      logger: bootstrapLogger,
+      bufferLogs: true
     })
+
+    // 用 DI 容器中的 LoggerService 实例替换掉临时日志器
+    nestApp.useLogger(nestApp.get(LoggerService))
 
     // 启动微服务
     await nestApp.listen()
 
-    bootstrapLogger.log('NestJS 微服务应用启动成功', 'Bootstrap')
+    bootstrapLogger.info('NestJS 微服务应用启动成功')
 
     return nestApp
   } catch (error) {
-    bootstrapLogger.error(
-      'NestJS 微服务应用启动失败',
-      error instanceof Error ? error.stack : String(error),
-      'Bootstrap'
-    )
+    bootstrapLogger.error('NestJS 微服务应用启动失败', error)
     throw error
   }
 }

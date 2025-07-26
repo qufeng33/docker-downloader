@@ -1,5 +1,4 @@
-import { Catch, ExceptionFilter, HttpException } from '@nestjs/common'
-import { ElectronLoggerService } from '../../services/electron-logger.service'
+import { Catch, ExceptionFilter, HttpException, Logger } from '@nestjs/common'
 import {
   ValidationException,
   BusinessException,
@@ -14,7 +13,7 @@ import type { ErrorResponseDto } from '../../modules/registry/registry.dto'
  */
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-  private readonly logger = new ElectronLoggerService().createScopedLogger('GlobalExceptionFilter')
+  private readonly logger = new Logger('GlobalExceptionFilter')
 
   catch(exception: unknown): ErrorResponseDto {
     const timestamp = new Date().toISOString()

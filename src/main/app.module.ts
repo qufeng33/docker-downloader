@@ -2,18 +2,17 @@ import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { EventEmitterModule } from '@nestjs/event-emitter'
 import { ElectronModule } from '@doubleshot/nest-electron'
-import { LoggerModule } from './common/logger/logger.module'
 import { WindowModule } from './modules/window/window.module'
 import { RegistryModule } from './modules/registry/registry.module'
 import { WindowService } from './modules/window/window.service'
-import { ElectronLoggerService } from './common/logger/electron-logger.service'
+import { LoggerModule } from './modules/logger/logger.module'
 
 /**
  * 应用根模块
  */
 @Module({
   imports: [
-    // 全局日志模块
+    // 日志模块
     LoggerModule,
 
     // 窗口管理模块
@@ -51,10 +50,4 @@ import { ElectronLoggerService } from './common/logger/electron-logger.service'
   controllers: [],
   providers: []
 })
-export class AppModule {
-  private readonly logger = new ElectronLoggerService().createScopedLogger('AppModule')
-
-  constructor() {
-    this.logger.info('AppModule 初始化完成')
-  }
-}
+export class AppModule {}
