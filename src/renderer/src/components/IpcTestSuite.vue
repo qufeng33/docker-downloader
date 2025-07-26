@@ -137,61 +137,57 @@ interface TypeTestResult {
   message?: string
 }
 
-// 响应式数据
+// 响应式状态
 const isRunning = ref(false)
 const typeTestResults = ref<TypeTestResult[]>([])
 
-// 测试套件定义
+// 创建测试项的工厂函数
+const createTestItem = (
+  id: string,
+  name: string,
+  description: string,
+  testFn: () => Promise<unknown>
+): TestItem => ({
+  id,
+  name,
+  description,
+  testFn,
+  status: 'pending'
+})
+
+// 测试套件定义 - 使用函数式方法构建
 const testSuite = ref<TestItem[]>([
-  {
-    id: 'ping',
-    name: 'Ping 通信测试',
-    description: '验证基础的 IPC 通信是否正常工作',
-    testFn: async () => {
-      const result = await window.api.registry.ping()
-      if (!result.message || !result.timestamp) {
-        throw new Error('Ping 响应格式不正确')
-      }
-      return result
-    },
-    status: 'pending'
-  },
-  {
-    id: 'status',
-    name: '状态查询测试',
-    description: '验证服务状态查询功能',
-    testFn: async () => {
-      const result = await window.api.registry.status()
-      if (!result.status || !result.message) {
-        throw new Error('状态响应格式不正确')
-      }
-      return result
-    },
-    status: 'pending'
-  },
-  {
-    id: 'basic-data',
-    name: '基础数据传输测试',
-    description: '验证基础数据结构的传输和处理',
-    testFn: async () => {
-      const testData = {
-        message: '测试消息',
-        timestamp: new Date().toISOString(),
-        data: { test: true, number: 42 }
-      }
-      const result = await window.api.registry.test(testData)
-      if (!result.success) {
-        throw new Error('基础数据处理失败')
-      }
-      return result
-    },
-    status: 'pending'
-  },
-  {
-    id: 'user-validation-success',
-    name: '用户验证成功测试',
-    description: '验证有效用户数据的验证功能',
-    testFn: async () => {
+  createTestItem('ping', 'Ping 通信测试', '验证基础的 IPC 通信是否正常工作', async () => {
+    const result = await window.api.registry.ping()
+    if (!result.message || !result.timestamp) {
+      throw new Error('Ping 响应格式不正确')
+    }
+    return result
+  }),
+  createTestItem('status', '状态查询测试', '验证服务状态查询功能', async () => {
+    const result = await window.api.registry.status()
+    if (!result.status || !result.message) {
+      throw new Error('状态响应格式不正确')
+    }
+    return result
+  }),
+  createTestItem('basic-data', '基础数据传输测试', '验证基础数据结构的传输和处理', async () => {
+    const testData = {
+      message: '测试消息',
+      timestamp: new Date().toISOString(),
+      data: { test: true, number: 42 }
+    }
+    const result = await window.api.registry.test(testData)
+    if (!result.success) {
+      throw new Error('基础数据处理失败')
+    }
+    return result
+  }),
+  createTestItem(
+    'user-validation-success',
+    '用户验证成功测试',
+    '验证有效用户数据的验证功能',
+    async () => {
       const userData: UserInfo = {
         name: '张三',
         email: 'zhangsan@example.com',
@@ -203,14 +199,13 @@ const testSuite = ref<TestItem[]>([
         throw new Error('有效用户验证失败')
       }
       return result
-    },
-    status: 'pending'
-  },
-  {
-    id: 'user-validation-failure',
-    name: '用户验证失败测试',
-    description: '验证业务规则失败的用户数据',
-    testFn: async () => {
+    }
+  ),
+  createTestItem(
+    'user-validation-failure',
+    '用户验证失败测试',
+    '验证业务规则失败的用户数据',
+    async () => {
       // 使用通过 DTO 验证但违反业务规则的数据
       const invalidUserData: UserInfo = {
         name: '测试用户', // DTO 验证通过（长度合规）
@@ -229,14 +224,13 @@ const testSuite = ref<TestItem[]>([
         throw new Error(`期望的业务规则错误未找到。实际错误: ${result.errors.join(', ')}`)
       }
       return result
-    },
-    status: 'pending'
-  },
-  {
-    id: 'dto-validation-failure',
-    name: 'DTO 验证失败测试',
-    description: '验证输入数据格式验证功能',
-    testFn: async () => {
+    }
+  ),
+  createTestItem(
+    'dto-validation-failure',
+    'DTO 验证失败测试',
+    '验证输入数据格式验证功能',
+    async () => {
       try {
         // 使用不符合 DTO 格式要求的数据
         const invalidUserData = {
@@ -266,87 +260,61 @@ const testSuite = ref<TestItem[]>([
           note: '成功捕获 DTO 验证错误'
         }
       }
-    },
-    status: 'pending'
-  },
-  {
-    id: 'image-search',
-    name: '镜像搜索测试',
-    description: '验证镜像搜索功能和复杂返回类型',
-    testFn: async () => {
-      const searchData: ImageSearchRequest = {
-        keyword: 'nginx',
-        registry: 'docker.io',
-        limit: 5
-      }
-      const result: ImageSearchResponse = await window.api.registry.searchImages(searchData)
-      if (!result.success || !result.data.results) {
-        throw new Error('镜像搜索结果格式不正确')
-      }
-      return result
-    },
-    status: 'pending'
-  },
-  {
-    id: 'complex-data',
-    name: '复杂数据处理测试',
-    description: '验证复杂数据结构的处理',
-    testFn: async () => {
-      const complexData: ComplexData = {
-        title: '测试标题',
-        count: 42,
-        enabled: true,
-        metadata: { version: '1.0', author: 'test' },
-        tags: ['tag1', 'tag2', 'tag3']
-      }
-      const result = await window.api.registry.complexData(complexData)
-      if (!result.success) {
-        throw new Error('复杂数据处理失败')
-      }
-      return result
-    },
-    status: 'pending'
-  },
-  {
-    id: 'async-operation',
-    name: '异步操作测试',
-    description: '验证异步操作的执行和正确返回',
-    testFn: async () => {
-      const delay = 1000
-      const startTime = Date.now()
-      const result: AsyncOperation = await window.api.registry.asyncOperation(delay)
-      const actualTime = Date.now() - startTime
+    }
+  ),
+  createTestItem('image-search', '镜像搜索测试', '验证镜像搜索功能和复杂返回类型', async () => {
+    const searchData: ImageSearchRequest = {
+      keyword: 'nginx',
+      registry: 'docker.io',
+      limit: 5
+    }
+    const result: ImageSearchResponse = await window.api.registry.searchImages(searchData)
+    if (!result.success || !result.data.results) {
+      throw new Error('镜像搜索结果格式不正确')
+    }
+    return result
+  }),
+  createTestItem('complex-data', '复杂数据处理测试', '验证复杂数据结构的处理', async () => {
+    const complexData: ComplexData = {
+      title: '测试标题',
+      count: 42,
+      enabled: true,
+      metadata: { version: '1.0', author: 'test' },
+      tags: ['tag1', 'tag2', 'tag3']
+    }
+    const result = await window.api.registry.complexData(complexData)
+    if (!result.success) {
+      throw new Error('复杂数据处理失败')
+    }
+    return result
+  }),
+  createTestItem('async-operation', '异步操作测试', '验证异步操作的执行和正确返回', async () => {
+    const delay = 1000
+    const startTime = Date.now()
+    const result: AsyncOperation = await window.api.registry.asyncOperation(delay)
+    const actualTime = Date.now() - startTime
 
-      if (!result.success || Math.abs(actualTime - delay) > 100) {
-        throw new Error('异步操作时间不正确')
+    if (!result.success || Math.abs(actualTime - delay) > 100) {
+      throw new Error('异步操作时间不正确')
+    }
+    return result
+  }),
+  createTestItem('error-handling', '错误处理测试', '验证错误的正确传播和处理', async () => {
+    try {
+      await window.api.registry.throwError('validation')
+      throw new Error('应该抛出错误但没有抛出')
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('验证错误')) {
+        return { errorCaught: true, errorMessage: error.message }
       }
-      return result
-    },
-    status: 'pending'
-  },
-  {
-    id: 'error-handling',
-    name: '错误处理测试',
-    description: '验证错误的正确传播和处理',
-    testFn: async () => {
-      try {
-        await window.api.registry.throwError('validation')
-        throw new Error('应该抛出错误但没有抛出')
-      } catch (error) {
-        if (error instanceof Error && error.message.includes('验证错误')) {
-          return { errorCaught: true, errorMessage: error.message }
-        }
-        throw new Error('错误类型或消息不正确')
-      }
-    },
-    status: 'pending'
-  }
+      throw new Error('错误类型或消息不正确')
+    }
+  })
 ])
 
-// 计算属性
+// 计算属性 - 使用更简洁的语法
 const completedTests = computed(
-  () =>
-    testSuite.value.filter((test) => test.status === 'passed' || test.status === 'failed').length
+  () => testSuite.value.filter((test) => ['passed', 'failed'].includes(test.status)).length
 )
 
 const passedTests = computed(
@@ -357,26 +325,22 @@ const failedTests = computed(
   () => testSuite.value.filter((test) => test.status === 'failed').length
 )
 
-// 方法
+// 工具函数
 const getStatusText = (status: TestStatus): string => {
-  switch (status) {
-    case 'pending':
-      return '待执行'
-    case 'running':
-      return '运行中'
-    case 'passed':
-      return '通过'
-    case 'failed':
-      return '失败'
-    default:
-      return '未知'
+  const statusMap: Record<TestStatus, string> = {
+    pending: '待执行',
+    running: '运行中',
+    passed: '通过',
+    failed: '失败'
   }
+  return statusMap[status] || '未知'
 }
 
 const formatTestResult = (result: unknown): string => {
   return JSON.stringify(result, null, 2)
 }
 
+// 测试执行函数
 const runSingleTest = async (test: TestItem): Promise<void> => {
   test.status = 'running'
   test.result = undefined
@@ -401,21 +365,23 @@ const runSingleTest = async (test: TestItem): Promise<void> => {
 const runAllTests = async (): Promise<void> => {
   isRunning.value = true
 
-  for (const test of testSuite.value) {
-    await runSingleTest(test)
-    // 短暂延迟，避免过快执行
-    await new Promise((resolve) => setTimeout(resolve, 100))
+  try {
+    for (const test of testSuite.value) {
+      await runSingleTest(test)
+      // 短暂延迟，避免过快执行
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
+
+    // 显示测试总结
+    console.log('🎯 测试总结:', {
+      总数: testSuite.value.length,
+      通过: passedTests.value,
+      失败: failedTests.value,
+      成功率: `${Math.round((passedTests.value / testSuite.value.length) * 100)}%`
+    })
+  } finally {
+    isRunning.value = false
   }
-
-  isRunning.value = false
-
-  // 显示测试总结
-  console.log('🎯 测试总结:', {
-    总数: testSuite.value.length,
-    通过: passedTests.value,
-    失败: failedTests.value,
-    成功率: `${Math.round((passedTests.value / testSuite.value.length) * 100)}%`
-  })
 }
 
 const clearResults = (): void => {
@@ -431,61 +397,50 @@ const clearResults = (): void => {
 const runTypeTests = (): void => {
   const results: TypeTestResult[] = []
 
-  // 测试 1: 验证 window.api 类型
-  try {
-    const api = window.api
-    if (api && api.registry) {
+  // 类型验证测试集
+  const typeTests = [
+    {
+      name: 'window.api 类型验证',
+      test: () => {
+        const api = window.api
+        return !!(api && api.registry)
+      },
+      successMessage: 'API 对象存在且结构正确',
+      failureMessage: 'API 对象不存在或结构不正确'
+    },
+    {
+      name: 'Promise 类型推导',
+      test: () => {
+        const pingPromise = window.api.registry.ping()
+        return pingPromise instanceof Promise
+      },
+      successMessage: '方法返回 Promise 类型正确',
+      failureMessage: '方法没有返回 Promise'
+    },
+    {
+      name: 'TypeScript 编译时类型检查',
+      test: () => true, // 如果能编译就说明类型检查正常
+      successMessage: '如果代码能编译，说明类型检查正常',
+      failureMessage: '编译时类型检查失败'
+    }
+  ]
+
+  for (const { name, test, successMessage, failureMessage } of typeTests) {
+    try {
+      const passed = test()
       results.push({
-        test: 'window.api 类型验证',
-        passed: true,
-        message: 'API 对象存在且结构正确'
+        test: name,
+        passed,
+        message: passed ? successMessage : failureMessage
       })
-    } else {
+    } catch (error) {
       results.push({
-        test: 'window.api 类型验证',
+        test: name,
         passed: false,
-        message: 'API 对象不存在或结构不正确'
+        message: `测试执行失败: ${error}`
       })
     }
-  } catch (error) {
-    results.push({
-      test: 'window.api 类型验证',
-      passed: false,
-      message: `API 访问失败: ${error}`
-    })
   }
-
-  // 测试 2: 验证类型推导
-  try {
-    // TypeScript 应该能够推导出正确的类型
-    const pingPromise = window.api.registry.ping()
-    if (pingPromise instanceof Promise) {
-      results.push({
-        test: 'Promise 类型推导',
-        passed: true,
-        message: '方法返回 Promise 类型正确'
-      })
-    } else {
-      results.push({
-        test: 'Promise 类型推导',
-        passed: false,
-        message: '方法没有返回 Promise'
-      })
-    }
-  } catch (error) {
-    results.push({
-      test: 'Promise 类型推导',
-      passed: false,
-      message: `类型推导失败: ${error}`
-    })
-  }
-
-  // 测试 3: 验证参数类型检查（编译时）
-  results.push({
-    test: 'TypeScript 编译时类型检查',
-    passed: true,
-    message: '如果代码能编译，说明类型检查正常'
-  })
 
   typeTestResults.value = results
 }

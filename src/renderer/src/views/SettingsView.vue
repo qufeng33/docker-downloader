@@ -82,6 +82,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores'
 import { ElMessage } from 'element-plus'
@@ -104,38 +105,76 @@ import {
   ElSpace
 } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
+import type { AppTheme, AppLanguage } from '@shared/types/app'
 
 const router = useRouter()
 const appStore = useAppStore()
 
+// 计算属性 - 更语义化的状态获取
+const currentThemeLabel = computed(() => {
+  const themeMap: Record<AppTheme, string> = {
+    light: '浅色',
+    dark: '深色',
+    auto: '跟随系统'
+  }
+  return themeMap[appStore.theme]
+})
+
+const currentLanguageLabel = computed(() => {
+  const languageMap: Record<AppLanguage, string> = {
+    'zh-CN': '简体中文',
+    'en-US': 'English'
+  }
+  return languageMap[appStore.currentLanguage]
+})
+
+// 导航函数
 const goBack = (): void => {
   router.push('/')
 }
 
-const handleThemeChange = (value: string | number | boolean | undefined): void => {
-  ElMessage.success(`主题已切换到: ${String(value)}`)
+// 主题切换处理
+const handleThemeChange = (): void => {
+  ElMessage.success(`主题已切换到: ${currentThemeLabel.value}`)
 }
 
-const handleLanguageChange = (value: string | number | boolean | undefined): void => {
-  const langValue = String(value)
-  ElMessage.success(`语言已切换到: ${langValue === 'zh-CN' ? '简体中文' : 'English'}`)
+// 语言切换处理
+const handleLanguageChange = (): void => {
+  ElMessage.success(`语言已切换到: ${currentLanguageLabel.value}`)
 }
 
-const testStore = (): void => {
-  appStore.setLoading(true)
-  appStore.setTitle('测试状态中...')
+// Store 状态测试
+const testStore = async (): Promise<void> => {
+  try {
+    appStore.setLoading(true)
+    appStore.setTitle('测试状态中...')
 
-  setTimeout(() => {
+    // 使用 Promise 替代 setTimeout，更现代化
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+
     appStore.setLoading(false)
     appStore.setTitle('Docker Downloader')
     ElMessage.success('Store 状态测试完成！')
-  }, 2000)
+  } catch (error) {
+    appStore.setLoading(false)
+    appStore.setTitle('Docker Downloader')
+    ElMessage.error('Store 状态测试失败')
+    console.error('Store test failed:', error)
+  }
 }
 
+// 重置设置
 const resetSettings = (): void => {
-  appStore.setTheme('auto')
-  appStore.setLanguage('zh-CN')
-  appStore.setTitle('Docker Downloader')
+  const defaultValues = {
+    theme: 'auto' as AppTheme,
+    language: 'zh-CN' as AppLanguage,
+    title: 'Docker Downloader'
+  }
+
+  appStore.setTheme(defaultValues.theme)
+  appStore.setLanguage(defaultValues.language)
+  appStore.setTitle(defaultValues.title)
+
   ElMessage.success('设置已重置')
 }
 </script>

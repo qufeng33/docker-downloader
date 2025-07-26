@@ -53,8 +53,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useAppStore } from '@/stores'
+import { useTheme } from '@/composables'
 import Versions from '@/components/Versions.vue'
 import {
   ElContainer,
@@ -69,22 +69,7 @@ import {
 import { House, Tools, Setting, Moon, Sunny } from '@element-plus/icons-vue'
 
 const appStore = useAppStore()
-
-// 主题切换
-const isDarkMode = ref(appStore.isDarkMode)
-
-const toggleTheme = (): void => {
-  const newTheme = isDarkMode.value ? 'dark' : 'light'
-  appStore.setTheme(newTheme)
-
-  // 应用主题到 HTML 元素
-  const html = document.documentElement
-  if (isDarkMode.value) {
-    html.classList.add('dark')
-  } else {
-    html.classList.remove('dark')
-  }
-}
+const { isDarkMode, toggleTheme } = useTheme()
 </script>
 
 <style scoped>
