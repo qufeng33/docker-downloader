@@ -80,7 +80,17 @@ export class RegistryController {
   @IpcHandle('search-images')
   async searchImages(@Payload() searchData: ImageSearchDto): Promise<{
     success: boolean
-    data: unknown
+    data: {
+      keyword: string
+      registry?: string
+      results: Array<{
+        name: string
+        description?: string
+        stars?: number
+        pulls?: number
+      }>
+      total: number
+    }
     processedAt: string
   }> {
     this.logger.debug('处理镜像搜索请求:', searchData)
@@ -129,7 +139,12 @@ export class RegistryController {
   @IpcHandle('async-operation')
   async asyncOperation(@Payload() delay: number): Promise<{
     success: boolean
-    data: unknown
+    data: {
+      delay: number
+      startTime: string
+      endTime: string
+      duration: number
+    }
     processedAt: string
   }> {
     this.logger.debug('处理异步操作请求，延迟:', delay)

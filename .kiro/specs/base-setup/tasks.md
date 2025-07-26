@@ -64,7 +64,7 @@
   - **测试方法**: 在控制器中创建返回固定值的测试方法，验证参数传递和响应返回
   - _需求: 2.1, 2.4, 2.6_
 
-- [ ] 8. 配置 Preload 脚本 API 暴露
+- [x] 8. 配置 Preload 脚本 API 暴露
   - 重构 src/preload/index.ts 暴露业务 API
   - 创建类型安全的 API 接口定义
   - 实现 contextBridge 安全暴露机制

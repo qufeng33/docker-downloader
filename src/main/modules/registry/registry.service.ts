@@ -4,7 +4,9 @@ import {
   ImageSearchDto,
   ComplexDataDto,
   ValidationResultDto,
-  TestResponseDto
+  TestResponseDto,
+  ImageSearchResponseDto,
+  AsyncOperationDto
 } from './registry.dto'
 import { BusinessException } from '../../common/exceptions'
 
@@ -94,7 +96,7 @@ export class RegistryService {
    * @param searchData 搜索数据
    * @returns 搜索结果
    */
-  searchImages(searchData: ImageSearchDto): TestResponseDto {
+  searchImages(searchData: ImageSearchDto): ImageSearchResponseDto {
     this.logger.debug('搜索镜像:', searchData)
 
     // 模拟业务逻辑
@@ -106,18 +108,18 @@ export class RegistryService {
 
     const mockResults = Array.from({ length: searchData.limit || 10 }, (_, i) => ({
       name: `${searchData.keyword}-image-${i + 1}`,
-      registry: searchData.registry || 'docker.io',
-      tags: ['latest', 'v1.0', 'stable'],
-      description: `模拟的 ${searchData.keyword} 镜像描述`
+      description: `模拟的 ${searchData.keyword} 镜像描述`,
+      stars: Math.floor(Math.random() * 1000) + 10,
+      pulls: Math.floor(Math.random() * 10000) + 100
     }))
 
     return {
       success: true,
       data: {
-        query: searchData,
+        keyword: searchData.keyword,
+        registry: searchData.registry,
         results: mockResults,
-        total: mockResults.length,
-        hasMore: (searchData.offset || 0) + mockResults.length < 100
+        total: mockResults.length
       },
       processedAt: new Date().toISOString()
     }
@@ -161,27 +163,28 @@ export class RegistryService {
    * @param delay 延迟时间（毫秒）
    * @returns 异步操作结果
    */
-  async performAsyncOperation(delay: number): Promise<TestResponseDto> {
+  async performAsyncOperation(delay: number): Promise<AsyncOperationDto> {
     this.logger.debug(`开始异步操作，延迟 ${delay}ms`)
 
     const startTime = Date.now()
+    const startTimeIso = new Date(startTime).toISOString()
 
     // 模拟异步操作
     await new Promise((resolve) => setTimeout(resolve, delay))
 
     const endTime = Date.now()
-    const actualDelay = endTime - startTime
+    const endTimeIso = new Date(endTime).toISOString()
+    const actualDuration = endTime - startTime
 
-    this.logger.debug(`异步操作完成，实际耗时 ${actualDelay}ms`)
+    this.logger.debug(`异步操作完成，实际耗时 ${actualDuration}ms`)
 
     return {
       success: true,
       data: {
-        requestedDelay: delay,
-        actualDelay,
-        startTime: new Date(startTime).toISOString(),
-        endTime: new Date(endTime).toISOString(),
-        operation: 'async-test-operation'
+        delay,
+        startTime: startTimeIso,
+        endTime: endTimeIso,
+        duration: actualDuration
       },
       processedAt: new Date().toISOString()
     }
