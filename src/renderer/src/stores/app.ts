@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { AppTheme, AppLanguage } from '../../../shared/types/app'
 
 // 应用全局状态管理
 export const useAppStore = defineStore('app', () => {
   // 状态
-  const theme = ref<'light' | 'dark' | 'auto'>('auto')
-  const language = ref<'zh-CN' | 'en-US'>('zh-CN')
+  const theme = ref<AppTheme>('auto')
+  const language = ref<AppLanguage>('zh-CN')
   const isLoading = ref<boolean>(false)
   const title = ref<string>('Docker Downloader')
 

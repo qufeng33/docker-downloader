@@ -83,7 +83,7 @@
 
 ## 第三阶段：Vue 3 前端架构升级
 
-- [ ] 10. 升级 Vue 3 应用入口
+- [x] 10. 升级 Vue 3 应用入口
   - 重构 src/renderer/src/main.ts 使用 Vue 3 API
   - 集成 Element Plus 组件库
   - 配置 Pinia 状态管理

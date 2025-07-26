@@ -1,146 +1,42 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import { electronAPI } from '@electron-toolkit/preload'
+import type { IpcChannelMap, IpcChannelNames } from '@shared/types/ipc'
 
-/**
- * ============================================
- * 独立的 IPC 类型定义系统
- * 不依赖主进程的装饰器类和依赖
- * ============================================
- */
-
-/**
- * 服务状态响应类型
- */
-interface ServiceStatusDto {
-  status: string
-  message: string
-  timestamp: string
-}
-
-/**
- * 测试请求类型
- */
-interface TestRequestDto {
-  message?: string
-  data?: unknown
-  timestamp?: string
-}
-
-/**
- * 用户信息类型
- */
-interface UserInfoDto {
-  name: string
-  email: string
-  age: number
-  hobbies?: string[]
-}
-
-/**
- * 镜像搜索请求类型
- */
-interface ImageSearchDto {
-  keyword: string
-  registry?: string
-  limit?: number
-  offset?: number
-}
-
-/**
- * 复杂数据类型
- */
-interface ComplexDataDto {
-  title: string
-  count: number
-  enabled: boolean
-  metadata: Record<string, unknown>
-  tags: string[]
-}
-
-/**
- * 测试响应类型
- */
-interface TestResponseDto {
-  success: boolean
-  data: unknown
-  processedAt: string
-}
-
-/**
- * 验证结果类型
- */
-interface ValidationResultDto {
-  valid: boolean
-  errors: string[]
-  data?: unknown
-}
-
-/**
- * Ping 响应类型
- */
-interface PingResponseDto {
-  message: string
-  timestamp: string
-  serverTime: number
-}
-
-/**
- * 异步操作响应类型
- */
-interface AsyncOperationDto {
-  success: boolean
-  data: {
-    delay: number
-    startTime: string
-    endTime: string
-    duration: number
+// 简化的 electronAPI，只包含我们需要的功能
+const electronAPI = {
+  ipcRenderer: {
+    send: (channel: string, ...args: unknown[]): void => ipcRenderer.send(channel, ...args),
+    invoke: (channel: string, ...args: unknown[]): Promise<unknown> =>
+      ipcRenderer.invoke(channel, ...args),
+    on: (channel: string, listener: (...args: unknown[]) => void): (() => void) => {
+      const wrappedListener = (_event: unknown, ...args: unknown[]): void => listener(...args)
+      ipcRenderer.on(channel, wrappedListener)
+      return (): void => {
+        ipcRenderer.removeListener(channel, wrappedListener)
+      }
+    },
+    once: (channel: string, listener: (...args: unknown[]) => void): (() => void) => {
+      const wrappedListener = (_event: unknown, ...args: unknown[]): void => listener(...args)
+      ipcRenderer.once(channel, wrappedListener)
+      return (): void => {
+        ipcRenderer.removeListener(channel, wrappedListener)
+      }
+    },
+    removeAllListeners: (channel: string): void => {
+      ipcRenderer.removeAllListeners(channel)
+    }
+  },
+  process: {
+    platform: process.platform,
+    versions: process.versions
   }
-  processedAt: string
-}
-
-/**
- * 镜像搜索响应类型
- */
-interface ImageSearchResponseDto {
-  success: boolean
-  data: {
-    keyword: string
-    registry?: string
-    results: Array<{
-      name: string
-      description?: string
-      stars?: number
-      pulls?: number
-    }>
-    total: number
-  }
-  processedAt: string
-}
-
-/**
- * IPC 通道映射定义
- * 定义每个通道的参数和返回类型
- */
-interface IpcChannelMap {
-  'registry/status': () => Promise<ServiceStatusDto>
-  'registry/test': (data: TestRequestDto | Record<string, unknown>) => Promise<TestResponseDto>
-  'registry/ping': () => Promise<PingResponseDto>
-  'registry/validate-user': (userData: UserInfoDto) => Promise<ValidationResultDto>
-  'registry/search-images': (searchData: ImageSearchDto) => Promise<ImageSearchResponseDto>
-  'registry/complex-data': (complexData: ComplexDataDto) => Promise<TestResponseDto>
-  'registry/throw-error': (errorType: string) => Promise<never>
-  'registry/async-operation': (delay: number) => Promise<AsyncOperationDto>
-}
-
-/**
- * IPC 通道名称类型
- */
-type IpcChannelNames = keyof IpcChannelMap
+} as const
 
 /**
  * ============================================
- * IPC 调用函数创建器
+ * 类型安全的 IPC 调用系统
  * ============================================
+ *
+ * 使用共享类型确保类型一致性
  */
 
 /**
@@ -222,19 +118,3 @@ if (process.contextIsolated) {
 
 export type ExposedApi = typeof api
 export type RegistryApi = typeof registryApi
-
-// 导出所有类型供其他模块使用
-export type {
-  ServiceStatusDto,
-  TestRequestDto,
-  UserInfoDto,
-  ImageSearchDto,
-  ComplexDataDto,
-  TestResponseDto,
-  ValidationResultDto,
-  PingResponseDto,
-  AsyncOperationDto,
-  ImageSearchResponseDto,
-  IpcChannelMap,
-  IpcChannelNames
-}

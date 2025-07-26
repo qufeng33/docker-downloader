@@ -1,78 +1,69 @@
 /**
- * 共享的 API 类型定义
- * 用于在渲染进程中导入和使用
+ * ====================================
+ * API 相关类型和工具
+ * ====================================
  *
- * 注意：这些类型从 Preload 脚本重新导出，确保类型一致性
+ * 这里包含渲染进程使用的 API 类型和工具函数
  */
 
-// 重新导出 Preload API 类型
-export type {
-  ExposedApi,
-  RegistryApi,
-  ServiceStatusDto,
-  TestRequestDto,
-  UserInfoDto,
-  ImageSearchDto,
-  ComplexDataDto,
-  TestResponseDto,
-  ValidationResultDto,
-  PingResponseDto,
-  AsyncOperationDto,
-  ImageSearchResponseDto,
-  IpcChannelMap,
-  IpcChannelNames
-} from '../../preload/index'
+// 重新导出所有基础类型
+export * from './base'
+export * from './ipc'
 
 /**
- * API 调用状态枚举
+ * Window API 接口定义
+ * 定义在 window 对象上暴露的 API 结构
  */
-export enum ApiCallStatus {
-  IDLE = 'idle',
-  LOADING = 'loading',
-  SUCCESS = 'success',
-  ERROR = 'error'
-}
-
-/**
- * 通用 API 响应包装器
- */
-export interface ApiResponse<T = unknown> {
-  success: boolean
-  data?: T
-  error?: {
-    code: string
-    message: string
-    details?: unknown
+export interface WindowElectronAPI {
+  ipcRenderer: {
+    send: (channel: string, ...args: unknown[]) => void
+    invoke: (channel: string, ...args: unknown[]) => Promise<unknown>
+    on: (channel: string, func: (...args: unknown[]) => void) => void
+    once: (channel: string, func: (...args: unknown[]) => void) => void
+    removeAllListeners: (channel: string) => void
   }
-  timestamp: string
+  process: {
+    platform: NodeJS.Platform
+    versions: {
+      chrome: string
+      node: string
+      electron: string
+      [key: string]: string
+    }
+  }
 }
 
 /**
- * 异步操作状态
+ * Registry API 接口
  */
-export interface AsyncOperationState<T = unknown> {
-  status: ApiCallStatus
-  data?: T
-  error?: string
-  loading: boolean
+export interface RegistryAPI {
+  ping: () => Promise<import('./base').PingResponse>
+  status: () => Promise<import('./base').ServiceStatus>
+  test: (
+    data: import('./base').TestRequest | Record<string, unknown>
+  ) => Promise<import('./base').TestResponse>
+  validateUser: (userData: import('./base').UserInfo) => Promise<import('./base').ValidationResult>
+  searchImages: (
+    searchData: import('./base').ImageSearchRequest
+  ) => Promise<import('./base').ImageSearchResponse>
+  complexData: (complexData: import('./base').ComplexData) => Promise<import('./base').TestResponse>
+  throwError: (errorType: string) => Promise<never>
+  asyncOperation: (delay: number) => Promise<import('./base').AsyncOperation>
 }
 
 /**
- * API 错误类型
+ * 完整的应用 API 接口
  */
-export interface ApiError {
-  code: string
-  message: string
-  details?: unknown
-  timestamp: string
+export interface AppAPI {
+  registry: RegistryAPI
 }
 
 /**
- * 工具类型：提取 Promise 的返回值类型
+ * Window 全局类型扩展
  */
-export type PromiseReturnType<T> = T extends Promise<infer U> ? U : never
-
-/**
- * 工具类型：提取函数的参数类型
- */
-export type FunctionParams<T> = T extends (...args: infer P) => unknown ? P : never
+declare global {
+  interface Window {
+    electron: WindowElectronAPI
+    api: AppAPI
+  }
+}

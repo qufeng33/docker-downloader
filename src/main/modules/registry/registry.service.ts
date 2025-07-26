@@ -1,14 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common'
 import {
-  UserInfoDto,
-  ImageSearchDto,
-  ComplexDataDto,
   ValidationResultDto,
   TestResponseDto,
   ImageSearchResponseDto,
   AsyncOperationDto
 } from './registry.dto'
 import { BusinessException } from '../../common/exceptions'
+import type { UserInfo, ImageSearchRequest, ComplexData } from '@shared/types'
 
 /**
  * 仓库管理服务
@@ -62,7 +60,7 @@ export class RegistryService {
    * @param userData 用户数据
    * @returns 验证结果
    */
-  validateUserInfo(userData: UserInfoDto): ValidationResultDto {
+  validateUserInfo(userData: UserInfo): ValidationResultDto {
     this.logger.debug('验证用户信息:', userData)
 
     const errors: string[] = []
@@ -96,7 +94,7 @@ export class RegistryService {
    * @param searchData 搜索数据
    * @returns 搜索结果
    */
-  searchImages(searchData: ImageSearchDto): ImageSearchResponseDto {
+  searchImages(searchData: ImageSearchRequest): ImageSearchResponseDto {
     this.logger.debug('搜索镜像:', searchData)
 
     // 模拟业务逻辑
@@ -130,7 +128,7 @@ export class RegistryService {
    * @param complexData 复杂数据
    * @returns 处理结果
    */
-  processComplexData(complexData: ComplexDataDto): TestResponseDto {
+  processComplexData(complexData: ComplexData): TestResponseDto {
     this.logger.debug('处理复杂数据:', complexData)
 
     // 模拟复杂处理逻辑

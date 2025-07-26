@@ -108,11 +108,11 @@
 import { ref, computed } from 'vue'
 import ErrorPropagationTest from './ErrorPropagationTest.vue'
 import type {
-  UserInfoDto,
-  ImageSearchDto,
-  ComplexDataDto,
-  AsyncOperationDto,
-  ImageSearchResponseDto
+  UserInfo,
+  ImageSearchRequest,
+  ComplexData,
+  ImageSearchResponse,
+  AsyncOperation
 } from '@shared/types'
 
 // 测试状态类型
@@ -192,7 +192,7 @@ const testSuite = ref<TestItem[]>([
     name: '用户验证成功测试',
     description: '验证有效用户数据的验证功能',
     testFn: async () => {
-      const userData: UserInfoDto = {
+      const userData: UserInfo = {
         name: '张三',
         email: 'zhangsan@example.com',
         age: 25,
@@ -212,7 +212,7 @@ const testSuite = ref<TestItem[]>([
     description: '验证业务规则失败的用户数据',
     testFn: async () => {
       // 使用通过 DTO 验证但违反业务规则的数据
-      const invalidUserData: UserInfoDto = {
+      const invalidUserData: UserInfo = {
         name: '测试用户', // DTO 验证通过（长度合规）
         email: 'test@temp.com', // DTO 验证通过（邮箱格式正确），但业务规则拒绝（包含 temp）
         age: 16, // DTO 验证通过（1-120范围内），但业务规则拒绝（小于18）
@@ -245,7 +245,7 @@ const testSuite = ref<TestItem[]>([
           age: 200, // 超出范围（最大120）
           hobbies: ['测试']
         }
-        await window.api.registry.validateUser(invalidUserData as UserInfoDto)
+        await window.api.registry.validateUser(invalidUserData as UserInfo)
         // 如果到这里说明没有抛出异常，测试失败
         throw new Error('DTO 验证应该抛出异常')
       } catch (error) {
@@ -274,12 +274,12 @@ const testSuite = ref<TestItem[]>([
     name: '镜像搜索测试',
     description: '验证镜像搜索功能和复杂返回类型',
     testFn: async () => {
-      const searchData: ImageSearchDto = {
+      const searchData: ImageSearchRequest = {
         keyword: 'nginx',
         registry: 'docker.io',
         limit: 5
       }
-      const result: ImageSearchResponseDto = await window.api.registry.searchImages(searchData)
+      const result: ImageSearchResponse = await window.api.registry.searchImages(searchData)
       if (!result.success || !result.data.results) {
         throw new Error('镜像搜索结果格式不正确')
       }
@@ -292,7 +292,7 @@ const testSuite = ref<TestItem[]>([
     name: '复杂数据处理测试',
     description: '验证复杂数据结构的处理',
     testFn: async () => {
-      const complexData: ComplexDataDto = {
+      const complexData: ComplexData = {
         title: '测试标题',
         count: 42,
         enabled: true,
@@ -314,7 +314,7 @@ const testSuite = ref<TestItem[]>([
     testFn: async () => {
       const delay = 1000
       const startTime = Date.now()
-      const result: AsyncOperationDto = await window.api.registry.asyncOperation(delay)
+      const result: AsyncOperation = await window.api.registry.asyncOperation(delay)
       const actualTime = Date.now() - startTime
 
       if (!result.success || Math.abs(actualTime - delay) > 100) {
