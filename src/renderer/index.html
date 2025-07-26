@@ -2,12 +2,70 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Electron</title>
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <title>Docker Downloader - 安全企业级应用</title>
+    
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+      content="
+        default-src 'self';
+        script-src 'self' 'unsafe-eval';
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: blob:;
+        font-src 'self' data:;
+        connect-src 'self' http://localhost:* ws://localhost:* wss://localhost:*;
+        media-src 'self';
+        object-src 'none';
+        child-src 'none';
+        frame-src 'none';
+        worker-src 'self';
+        form-action 'self';
+        base-uri 'self';
+        manifest-src 'self';
+        upgrade-insecure-requests;
+      "
     />
+    
+    <!-- 防止 MIME 类型嗅探 -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    
+    <!-- 防止点击劫持 -->
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    
+    <!-- XSS 保护 -->
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    
+    <!-- 严格传输安全（生产环境） -->
+    <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains" />
+    
+    <!-- 引用者策略 -->
+    <meta name="referrer" content="no-referrer" />
+    
+    <!-- 权限策略 -->
+    <meta
+      http-equiv="Permissions-Policy"
+      content="
+        camera=(),
+        microphone=(),
+        geolocation=(),
+        usb=(),
+        bluetooth=(),
+        payment=(),
+        midi=(),
+        magnetometer=(),
+        gyroscope=(),
+        accelerometer=(),
+        ambient-light-sensor=(),
+        autoplay=(),
+        encrypted-media=(),
+        fullscreen=(self),
+        picture-in-picture=(),
+        screen-wake-lock=(),
+        web-share=()
+      "
+    />
+    
+    <!-- 视口配置 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   </head>
 
   <body>

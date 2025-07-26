@@ -4,6 +4,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter'
 import { ElectronModule } from '@doubleshot/nest-electron'
 import { WindowModule } from './modules/window/window.module'
 import { RegistryModule } from './modules/registry/registry.module'
+import { SecurityModule } from './modules/security/security.module'
 import { WindowService } from './modules/window/window.service'
 import { LoggerModule } from './modules/logger/logger.module'
 
@@ -14,6 +15,9 @@ import { LoggerModule } from './modules/logger/logger.module'
   imports: [
     // 日志模块
     LoggerModule,
+
+    // 安全模块
+    SecurityModule,
 
     // 窗口管理模块
     WindowModule,

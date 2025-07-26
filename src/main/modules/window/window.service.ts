@@ -18,7 +18,6 @@ export class WindowService {
   createMainWindow(): BrowserWindow {
     this.logger.log('创建主窗口...')
 
-    // 窗口配置
     const windowConfig = {
       width: 1200,
       height: 800,
@@ -30,20 +29,32 @@ export class WindowService {
       icon: join(__dirname, '../../../../resources/icon.png'),
       webPreferences: {
         preload: join(__dirname, '../preload/index.js'),
-        sandbox: false,
+        sandbox: true,
         contextIsolation: true,
         nodeIntegration: false,
+        nodeIntegrationInSubFrames: false,
+        nodeIntegrationInWorker: false,
         webSecurity: true,
         allowRunningInsecureContent: false,
         experimentalFeatures: false,
         enableRemoteModule: false,
-        // 开发环境允许开发者工具
-        devTools: is.dev
+        enableBlinkFeatures: '',
+        disableBlinkFeatures: 'Auxclick',
+        spellcheck: true,
+        plugins: false,
+        javascript: true, // 我们需要 JavaScript，但在受控环境中
+        images: true,
+        java: false,
+        webgl: false,
+        devTools: is.dev,
+        enableAccessibilityEvents: false,
+        backgroundThrottling: true
       }
     }
 
     this.mainWindow = new BrowserWindow(windowConfig)
 
+    this.setupSecurityEvents()
     this.setupWindowEvents()
     this.loadWindowContent()
 
@@ -55,6 +66,104 @@ export class WindowService {
    */
   getMainWindow(): BrowserWindow | null {
     return this.mainWindow
+  }
+
+  /**
+   * 设置安全事件监听
+   */
+  private setupSecurityEvents(): void {
+    if (!this.mainWindow) return
+
+    // 拦截新窗口创建
+    this.mainWindow.webContents.setWindowOpenHandler((details) => {
+      this.logger.warn('安全警告：拦截新窗口创建请求', { url: details.url })
+
+      // 只允许 HTTPS 链接在外部浏览器中打开
+      if (details.url.startsWith('https://')) {
+        import('electron').then(({ shell }) => {
+          shell.openExternal(details.url).catch((err) => {
+            this.logger.error('打开外部链接失败:', err)
+          })
+        })
+      } else {
+        this.logger.warn('安全警告：拒绝打开非 HTTPS 链接', { url: details.url })
+      }
+
+      return { action: 'deny' }
+    })
+
+    // 拦截导航请求
+    this.mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
+      const parsedUrl = new URL(navigationUrl)
+
+      // 只允许导航到本地开发服务器或本地文件
+      if (is.dev && parsedUrl.origin === process.env['ELECTRON_RENDERER_URL']) {
+        this.logger.debug('允许导航到开发服务器:', navigationUrl)
+        return
+      }
+
+      if (parsedUrl.protocol === 'file:') {
+        this.logger.debug('允许导航到本地文件:', navigationUrl)
+        return
+      }
+
+      // 拒绝其他所有导航
+      this.logger.warn('安全警告：拦截导航请求', { url: navigationUrl })
+      event.preventDefault()
+    })
+
+    // 拦截子框架导航
+    this.mainWindow.webContents.on(
+      'did-frame-navigate',
+      (_event, url, httpResponseCode, _httpStatusText, isMainFrame, frameProcessId) => {
+        if (!isMainFrame) {
+          this.logger.warn('安全警告：检测到子框架导航', {
+            url,
+            httpResponseCode,
+            frameProcessId
+          })
+        }
+      }
+    )
+
+    // 监控权限请求
+    this.mainWindow.webContents.session.setPermissionRequestHandler(
+      (_webContents, permission, callback, details) => {
+        this.logger.warn('安全警告：权限请求', { permission, details })
+
+        // 拒绝所有权限请求（根据需要可以选择性允许）
+        const allowedPermissions: string[] = []
+
+        if (allowedPermissions.includes(permission)) {
+          this.logger.log('允许权限:', permission)
+          callback(true)
+        } else {
+          this.logger.warn('拒绝权限:', permission)
+          callback(false)
+        }
+      }
+    )
+
+    // 监控证书错误
+    this.mainWindow.webContents.session.setCertificateVerifyProc((request, callback) => {
+      // 在开发环境中，我们可能需要接受自签名证书
+      if (is.dev && request.hostname === 'localhost') {
+        this.logger.debug('开发环境：接受 localhost 证书')
+        callback(0) // 0 表示信任
+        return
+      }
+
+      // 生产环境中严格验证证书
+      callback(-2) // -2 表示使用系统验证
+    })
+
+    // 监控控制台消息（用于检测潜在的安全问题）
+    this.mainWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+      if (level >= 2) {
+        // 警告和错误级别
+        this.logger.warn('渲染进程控制台消息:', { level, message, line, sourceId })
+      }
+    })
   }
 
   /**
@@ -71,14 +180,6 @@ export class WindowService {
     this.mainWindow.on('closed', () => {
       this.logger.log('主窗口已关闭')
       this.mainWindow = null
-    })
-
-    this.mainWindow.webContents.setWindowOpenHandler((details) => {
-      this.logger.log('拦截外部链接:', details.url)
-      import('electron').then(({ shell }) => {
-        shell.openExternal(details.url)
-      })
-      return { action: 'deny' }
     })
   }
 

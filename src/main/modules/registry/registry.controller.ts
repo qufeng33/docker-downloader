@@ -2,13 +2,17 @@ import { Controller, Logger } from '@nestjs/common'
 import { IpcHandle } from '@doubleshot/nest-electron'
 import { Payload } from '@nestjs/microservices'
 import { RegistryService } from './registry.service'
+import { IpcSecurityService } from '../security/ipc-security.service'
 import { ImageSearchDto, ComplexDataDto, UserInfoDto } from './registry.dto'
 
 @Controller('registry')
 export class RegistryController {
   private readonly logger = new Logger(RegistryController.name)
 
-  constructor(private readonly registryService: RegistryService) {
+  constructor(
+    private readonly registryService: RegistryService,
+    private readonly ipcSecurityService: IpcSecurityService
+  ) {
     this.logger.log('RegistryController 初始化完成')
   }
 
@@ -67,12 +71,28 @@ export class RegistryController {
     data?: unknown
   }> {
     this.logger.debug('处理用户验证请求:', userData)
+
     try {
-      const result = this.registryService.validateUserInfo(userData)
+      // 安全验证：检查频率限制
+      if (!this.ipcSecurityService.checkRateLimit('registry/validate-user')) {
+        throw new Error('请求频率过高，请稍后再试')
+      }
+
+      // 安全验证：数据清理
+      const sanitizedData = this.ipcSecurityService.sanitizeData(userData) as UserInfoDto
+
+      const result = this.registryService.validateUserInfo(sanitizedData)
       this.logger.debug('用户验证成功:', result)
       return result
     } catch (error) {
       this.logger.error('用户验证失败:', error)
+
+      // 记录安全事件
+      this.ipcSecurityService.logSecurityEvent('用户验证失败', {
+        error: error instanceof Error ? error.message : '未知错误',
+        userData: userData
+      })
+
       throw error
     }
   }

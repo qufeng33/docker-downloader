@@ -1,33 +1,153 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { IpcChannelMap, IpcChannelNames } from '@shared/types/ipc'
 
-// 简化的 electronAPI，只包含我们需要的功能
+/**
+ * ============================================
+ * 安全的预加载脚本
+ * ============================================
+ *
+ * 在沙盒模式下运行，严格限制暴露的 API
+ */
+
+// 允许的 IPC 通道白名单
+const ALLOWED_CHANNELS: readonly string[] = [
+  'registry/ping',
+  'registry/status',
+  'registry/test',
+  'registry/validate-user',
+  'registry/search-images',
+  'registry/complex-data',
+  'registry/async-operation',
+  'registry/throw-error'
+] as const
+
+/**
+ * 验证 IPC 通道是否在白名单中
+ */
+function isChannelAllowed(channel: string): boolean {
+  return ALLOWED_CHANNELS.includes(channel)
+}
+
+/**
+ * 安全的输入验证和清理
+ */
+function sanitizeInput(input: unknown): unknown {
+  if (input === null || input === undefined) {
+    return input
+  }
+
+  if (typeof input === 'string') {
+    // 防止 XSS 和脚本注入
+    return input
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/javascript:/gi, '')
+      .replace(/on\w+\s*=/gi, '')
+      .trim()
+  }
+
+  if (typeof input === 'object' && input !== null) {
+    if (Array.isArray(input)) {
+      return input.map(sanitizeInput)
+    }
+
+    const sanitized: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(input)) {
+      // 只允许字母数字和下划线的键名
+      if (/^[a-zA-Z0-9_]+$/.test(key)) {
+        sanitized[key] = sanitizeInput(value)
+      }
+    }
+    return sanitized
+  }
+
+  return input
+}
+
+// 安全的 electronAPI，增加了验证和日志记录
 const electronAPI = {
   ipcRenderer: {
-    send: (channel: string, ...args: unknown[]): void => ipcRenderer.send(channel, ...args),
-    invoke: (channel: string, ...args: unknown[]): Promise<unknown> =>
-      ipcRenderer.invoke(channel, ...args),
+    send: (channel: string, ...args: unknown[]): void => {
+      if (!isChannelAllowed(channel)) {
+        console.error('安全错误：不允许的 IPC 通道:', channel)
+        throw new Error(`不允许的 IPC 通道: ${channel}`)
+      }
+
+      const sanitizedArgs = args.map(sanitizeInput)
+      console.debug('IPC发送:', { channel, args: sanitizedArgs })
+      ipcRenderer.send(channel, ...sanitizedArgs)
+    },
+
+    invoke: async (channel: string, ...args: unknown[]): Promise<unknown> => {
+      if (!isChannelAllowed(channel)) {
+        console.error('安全错误：不允许的 IPC 通道:', channel)
+        throw new Error(`不允许的 IPC 通道: ${channel}`)
+      }
+
+      const sanitizedArgs = args.map(sanitizeInput)
+      console.debug('IPC调用:', { channel, args: sanitizedArgs })
+
+      try {
+        const result = await ipcRenderer.invoke(channel, ...sanitizedArgs)
+        console.debug('IPC响应:', { channel, result })
+        return result
+      } catch (error) {
+        console.error('IPC调用失败:', { channel, error })
+        throw error
+      }
+    },
+
     on: (channel: string, listener: (...args: unknown[]) => void): (() => void) => {
-      const wrappedListener = (_event: unknown, ...args: unknown[]): void => listener(...args)
+      if (!isChannelAllowed(channel)) {
+        console.error('安全错误：不允许的 IPC 通道:', channel)
+        throw new Error(`不允许的 IPC 通道: ${channel}`)
+      }
+
+      const wrappedListener = (_event: unknown, ...args: unknown[]): void => {
+        const sanitizedArgs = args.map(sanitizeInput)
+        listener(...sanitizedArgs)
+      }
+
       ipcRenderer.on(channel, wrappedListener)
       return (): void => {
         ipcRenderer.removeListener(channel, wrappedListener)
       }
     },
+
     once: (channel: string, listener: (...args: unknown[]) => void): (() => void) => {
-      const wrappedListener = (_event: unknown, ...args: unknown[]): void => listener(...args)
+      if (!isChannelAllowed(channel)) {
+        console.error('安全错误：不允许的 IPC 通道:', channel)
+        throw new Error(`不允许的 IPC 通道: ${channel}`)
+      }
+
+      const wrappedListener = (_event: unknown, ...args: unknown[]): void => {
+        const sanitizedArgs = args.map(sanitizeInput)
+        listener(...sanitizedArgs)
+      }
+
       ipcRenderer.once(channel, wrappedListener)
       return (): void => {
         ipcRenderer.removeListener(channel, wrappedListener)
       }
     },
+
     removeAllListeners: (channel: string): void => {
+      if (!isChannelAllowed(channel)) {
+        console.error('安全错误：不允许的 IPC 通道:', channel)
+        throw new Error(`不允许的 IPC 通道: ${channel}`)
+      }
+
       ipcRenderer.removeAllListeners(channel)
     }
   },
+
+  // 只暴露必要的进程信息，隐藏敏感信息
   process: {
     platform: process.platform,
-    versions: process.versions
+    versions: {
+      electron: process.versions.electron,
+      chrome: process.versions.chrome,
+      node: process.versions.node
+    }
   }
 } as const
 
