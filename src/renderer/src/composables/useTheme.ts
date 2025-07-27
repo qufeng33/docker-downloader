@@ -43,7 +43,7 @@ export function useTheme(): {
   // 监听系统主题变化（仅在自动模式下）
   onMounted(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const handleSystemThemeChange = () => {
+    const handleSystemThemeChange = (): void => {
       if (currentTheme.value === 'auto') {
         applyThemeToDOM(mediaQuery.matches)
       }

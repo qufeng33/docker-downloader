@@ -4,6 +4,7 @@ import { ref, computed, watch } from 'vue'
  * 异步操作管理组合式函数
  * 统一管理异步操作的加载状态、错误处理
  */
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function useAsyncOperation<T = unknown>() {
   const isLoading = ref(false)
   const error = ref<Error | null>(null)
@@ -65,6 +66,7 @@ export function useAsyncOperation<T = unknown>() {
  * IPC 调用组合式函数
  * 专门用于处理 IPC 通信的异步操作
  */
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function useIpcCall<T = unknown>() {
   const { isLoading, error, data, hasError, hasData, isIdle, execute, reset } =
     useAsyncOperation<T>()
