@@ -2,6 +2,12 @@ import { Injectable, Logger } from '@nestjs/common'
 import { BrowserWindow } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
+import {
+  THEME_COLORS,
+  WINDOW_CONFIG,
+  PLATFORM_CONFIG,
+  getPlatformConfig
+} from '@shared/config/theme'
 
 /**
  * 窗口管理服务
@@ -18,14 +24,30 @@ export class WindowService {
   createMainWindow(): BrowserWindow {
     this.logger.log('创建主窗口...')
 
+    // 获取平台配置
+    const { isMacOS, isWindows, config } = getPlatformConfig()
+
     const windowConfig = {
-      width: 1200,
-      height: 800,
-      minWidth: 800,
-      minHeight: 600,
+      ...WINDOW_CONFIG.DEFAULT_SIZE,
       show: false,
       autoHideMenuBar: true,
-      titleBarStyle: 'default' as const,
+
+      // 统一的窗口配置 - 使用主题系统
+      frame: !isWindows, // Windows无边框，macOS保持边框
+      titleBarStyle: isMacOS ? ('hidden' as const) : ('default' as const),
+      titleBarOverlay: isWindows
+        ? {
+            color: THEME_COLORS.WINDOW_BACKGROUND, // 使用统一背景色
+            symbolColor: '#000000',
+            height: config.DRAG_AREA_HEIGHT
+          }
+        : undefined,
+      trafficLightPosition: isMacOS
+        ? (PLATFORM_CONFIG.MACOS.TRAFFIC_LIGHT_POSITION as { x: number; y: number })
+        : undefined,
+      vibrancy: undefined, // 禁用毛玻璃效果避免颜色干扰
+      transparent: false,
+      backgroundColor: WINDOW_CONFIG.BACKGROUND_COLOR, // 关键：使用统一背景色
       icon: join(__dirname, '../../../../resources/icon.png'),
       webPreferences: {
         preload: join(__dirname, '../preload/index.js'),
@@ -66,6 +88,38 @@ export class WindowService {
    */
   getMainWindow(): BrowserWindow | null {
     return this.mainWindow
+  }
+
+  /**
+   * 最小化窗口
+   */
+  minimizeWindow(): void {
+    this.mainWindow?.minimize()
+  }
+
+  /**
+   * 最大化/恢复窗口
+   */
+  toggleMaximizeWindow(): void {
+    if (this.mainWindow?.isMaximized()) {
+      this.mainWindow.unmaximize()
+    } else {
+      this.mainWindow?.maximize()
+    }
+  }
+
+  /**
+   * 关闭窗口
+   */
+  closeWindow(): void {
+    this.mainWindow?.close()
+  }
+
+  /**
+   * 检查窗口是否最大化
+   */
+  isMaximized(): boolean {
+    return this.mainWindow?.isMaximized() ?? false
   }
 
   /**

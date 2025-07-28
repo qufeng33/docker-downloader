@@ -3,16 +3,18 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <h2>IPC 通信测试</h2>
-          <el-button text @click="goBack">
-            <el-icon><ArrowLeft /></el-icon>
-            返回首页
-          </el-button>
+          <h2>功能测试</h2>
+          <div class="header-actions">
+            <el-button text @click="goBack">
+              <el-icon><ArrowLeft /></el-icon>
+              返回首页
+            </el-button>
+          </div>
         </div>
       </template>
 
       <div class="test-content">
-        <IpcTestSuite />
+        <el-empty description="页面内容正在开发中" />
       </div>
     </el-card>
   </div>
@@ -20,8 +22,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import IpcTestSuite from '@/components/IpcTestSuite.vue'
-import { ElCard, ElButton, ElIcon } from 'element-plus'
+import { ElCard, ElButton, ElIcon, ElEmpty } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -33,9 +34,17 @@ const goBack = (): void => {
 
 <style scoped>
 .test-view {
+  height: 100vh;
+  width: 100vw;
   padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 50%, #e8f5e8 100%);
+}
+
+.test-view :deep(.el-card) {
+  height: 100%;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {
@@ -49,7 +58,16 @@ const goBack = (): void => {
   color: var(--el-text-color-primary);
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .test-content {
-  padding: 20px 0;
+  height: calc(100% - 80px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

@@ -16,7 +16,7 @@ const routes: RouteRecordRaw[] = [
     name: 'Test',
     component: () => import('@/views/TestView.vue'),
     meta: {
-      title: 'IPC 通信测试'
+      title: '功能测试'
     }
   },
   {

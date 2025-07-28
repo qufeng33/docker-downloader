@@ -18,7 +18,12 @@ const ALLOWED_CHANNELS: readonly string[] = [
   'registry/search-images',
   'registry/complex-data',
   'registry/async-operation',
-  'registry/throw-error'
+  'registry/throw-error',
+  // 窗口控制通道
+  'window/minimize',
+  'window/toggle-maximize',
+  'window/close',
+  'window/is-maximized'
 ] as const
 
 /**
@@ -201,10 +206,21 @@ const registryApi = {
 } as const
 
 /**
+ * Window 窗口控制 API
+ */
+const windowApi = {
+  minimize: (): Promise<void> => ipcRenderer.invoke('window/minimize'),
+  toggleMaximize: (): Promise<void> => ipcRenderer.invoke('window/toggle-maximize'),
+  close: (): Promise<void> => ipcRenderer.invoke('window/close'),
+  isMaximized: (): Promise<boolean> => ipcRenderer.invoke('window/is-maximized')
+} as const
+
+/**
  * 完整的 API 接口
  */
 const api = {
-  registry: registryApi
+  registry: registryApi,
+  window: windowApi
 } as const
 
 /**
@@ -238,3 +254,4 @@ if (process.contextIsolated) {
 
 export type ExposedApi = typeof api
 export type RegistryApi = typeof registryApi
+export type WindowApi = typeof windowApi

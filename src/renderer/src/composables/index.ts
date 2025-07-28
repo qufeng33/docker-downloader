@@ -4,6 +4,7 @@
 export { useTheme } from './useTheme'
 export { useAsyncOperation, useIpcCall } from './useAsync'
 export { useHotkeys, useWindowSize } from './useUtils'
+export { usePlatform } from './usePlatform'
 
 // 类型导出
 export type * from './useTheme'

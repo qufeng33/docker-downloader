@@ -52,10 +52,21 @@ export interface RegistryAPI {
 }
 
 /**
+ * Window 控制 API 接口
+ */
+export interface WindowAPI {
+  minimize: () => Promise<void>
+  toggleMaximize: () => Promise<void>
+  close: () => Promise<void>
+  isMaximized: () => Promise<boolean>
+}
+
+/**
  * 完整的应用 API 接口
  */
 export interface AppAPI {
   registry: RegistryAPI
+  window: WindowAPI
 }
 
 /**
