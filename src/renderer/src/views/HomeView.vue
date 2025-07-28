@@ -93,6 +93,7 @@
                   clearable
                   @keyup.enter="performSearch"
                   @input="onSearchInput"
+                  @clear="clearSearch"
                 >
                   <template #prefix>
                     <el-icon class="search-prefix-icon"><Search /></el-icon>
@@ -160,10 +161,6 @@
                         <h3 class="image-name">{{ image.name }}</h3>
                         <p class="image-description">{{ image.description }}</p>
                       </div>
-                    </div>
-                    <div class="image-badges">
-                      <el-tag v-if="image.isOfficial" type="success" size="small">官方</el-tag>
-                      <el-tag v-if="image.isVerified" type="primary" size="small">已验证</el-tag>
                     </div>
                   </div>
 
@@ -381,6 +378,16 @@ const getDisplayTags = (image: DockerImage): string[] => {
   return showAll ? allTags : allTags.slice(0, 5)
 }
 
+// 清空搜索
+const clearSearch = (): void => {
+  searchQuery.value = ''
+  searchResults.value = []
+  expandedCard.value = null
+  showAllTags.value = {}
+  isSearching.value = false
+  showSkeleton.value = false
+}
+
 // 搜索功能
 const onSearchInput = (): void => {
   // 可以在这里添加实时搜索建议逻辑
@@ -398,7 +405,7 @@ const performSearch = async (): Promise<void> => {
     if (isSearching.value) {
       showSkeleton.value = true
     }
-  }, 600) // 与搜索框动画时间匹配
+  }, 800) // 与搜索框动画时间匹配
 
   try {
     // 模拟搜索API调用
@@ -493,7 +500,34 @@ const addToDownloadList = (image: DockerImage): void => {
 // 组件挂载时初始化
 onMounted(() => {
   initWindowState()
+  initScrollbarBehavior()
 })
+
+// 初始化滚动条行为
+const initScrollbarBehavior = (): void => {
+  let scrollTimeout: number
+
+  const handleScroll = (element: HTMLElement): void => {
+    element.classList.add('scrolling')
+
+    clearTimeout(scrollTimeout)
+    scrollTimeout = window.setTimeout(() => {
+      element.classList.remove('scrolling')
+    }, 1000) // 滚动停止1秒后隐藏滚动条
+  }
+
+  // 为主容器和内容区域添加滚动监听
+  const homeView = document.querySelector('.home-view') as HTMLElement
+  const contentArea = document.querySelector('.content-area') as HTMLElement
+
+  if (homeView) {
+    homeView.addEventListener('scroll', () => handleScroll(homeView))
+  }
+
+  if (contentArea) {
+    contentArea.addEventListener('scroll', () => handleScroll(contentArea))
+  }
+}
 </script>
 
 <style scoped>
@@ -744,7 +778,7 @@ onMounted(() => {
   text-align: center;
   position: relative;
   z-index: 1;
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
 
   /* 默认居中布局 */
   display: flex;
@@ -852,7 +886,7 @@ onMounted(() => {
   z-index: 1;
   margin-top: 32px;
   opacity: 1;
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 /* 搜索激活时隐藏热门标签 */
@@ -1279,12 +1313,6 @@ onMounted(() => {
   white-space: nowrap;
 }
 
-.image-badges {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
 /* 统计信息 - 水平紧凑布局 */
 .card-stats {
   display: flex;
@@ -1520,5 +1548,125 @@ onMounted(() => {
   .expanded-actions {
     flex-direction: column;
   }
+}
+
+/* ==========================================
+   自定义滚动条样式 - 现代化设计
+   ========================================== */
+
+/* 主滚动条容器样式 */
+.home-view::-webkit-scrollbar,
+.content-area::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+}
+
+/* 滚动条轨道 */
+.home-view::-webkit-scrollbar-track,
+.content-area::-webkit-scrollbar-track {
+  background: rgba(248, 250, 252, 0.8);
+  border-radius: 12px;
+  margin: 8px 0;
+}
+
+/* 滚动条滑块 */
+.home-view::-webkit-scrollbar-thumb,
+.content-area::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgba(59, 130, 246, 0.6) 0%,
+    rgba(29, 78, 216, 0.8) 50%,
+    rgba(124, 58, 237, 0.6) 100%
+  );
+  border-radius: 12px;
+  border: 2px solid rgba(248, 250, 252, 0.8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+/* 滚动条滑块悬停效果 */
+.home-view::-webkit-scrollbar-thumb:hover,
+.content-area::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(59, 130, 246, 0.8) 0%,
+    rgba(29, 78, 216, 1) 50%,
+    rgba(124, 58, 237, 0.8) 100%
+  );
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 4px 16px rgba(59, 130, 246, 0.3),
+    0 2px 8px rgba(59, 130, 246, 0.2);
+  transform: scaleX(1.2);
+}
+
+/* 滚动条滑块激活状态 */
+.home-view::-webkit-scrollbar-thumb:active,
+.content-area::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, rgba(29, 78, 216, 1) 0%, rgba(124, 58, 237, 1) 100%);
+  box-shadow:
+    0 6px 20px rgba(59, 130, 246, 0.4),
+    inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 滚动条拐角 */
+.home-view::-webkit-scrollbar-corner,
+.content-area::-webkit-scrollbar-corner {
+  background: rgba(248, 250, 252, 0.8);
+  border-radius: 12px;
+}
+
+/* 深色模式下的滚动条适配 */
+@media (prefers-color-scheme: dark) {
+  .home-view::-webkit-scrollbar-track,
+  .content-area::-webkit-scrollbar-track {
+    background: rgba(31, 41, 55, 0.8);
+  }
+
+  .home-view::-webkit-scrollbar-thumb,
+  .content-area::-webkit-scrollbar-thumb {
+    border-color: rgba(31, 41, 55, 0.8);
+  }
+
+  .home-view::-webkit-scrollbar-thumb:hover,
+  .content-area::-webkit-scrollbar-thumb:hover {
+    border-color: rgba(55, 65, 81, 0.9);
+  }
+
+  .home-view::-webkit-scrollbar-corner,
+  .content-area::-webkit-scrollbar-corner {
+    background: rgba(31, 41, 55, 0.8);
+  }
+}
+
+/* 细节优化 - Firefox 滚动条样式 */
+.home-view {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.6) rgba(248, 250, 252, 0.8);
+}
+
+.content-area {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.6) rgba(248, 250, 252, 0.8);
+}
+
+/* 滚动条只在滚动或悬停时显示 - 增强用户体验 */
+.home-view::-webkit-scrollbar,
+.content-area::-webkit-scrollbar {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.home-view:hover::-webkit-scrollbar,
+.content-area:hover::-webkit-scrollbar,
+.home-view::-webkit-scrollbar:hover,
+.content-area::-webkit-scrollbar:hover {
+  opacity: 1;
+}
+
+/* 滚动时显示滚动条 */
+.home-view.scrolling::-webkit-scrollbar,
+.content-area.scrolling::-webkit-scrollbar {
+  opacity: 1;
 }
 </style>
