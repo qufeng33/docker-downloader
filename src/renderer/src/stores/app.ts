@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
-import type { AppTheme, AppLanguage } from '../../../shared/types/app'
+import type { AppTheme, AppLanguage } from '@shared/types/app'
 
 // 应用全局状态管理 - Vue 3 Composition API 风格
 export const useAppStore = defineStore('app', () => {
