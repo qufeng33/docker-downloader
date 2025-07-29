@@ -64,7 +64,7 @@
       </div>
 
       <!-- 搜索结果 - 瀑布流布局 -->
-      <TransitionGroup v-else-if="searchResults.length" name="list" tag="div" class="results-grid">
+      <div v-else-if="searchResults.length" class="results-grid">
         <masonry-wall
           :key="searchResults.length"
           :items="searchResults"
@@ -81,7 +81,7 @@
             />
           </template>
         </masonry-wall>
-      </TransitionGroup>
+      </div>
 
       <!-- 无结果 -->
       <div v-else-if="!isSearching && searchResults.length === 0" class="no-results">

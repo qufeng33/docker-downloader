@@ -1,18 +1,22 @@
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, type Ref, type ComputedRef } from 'vue'
 
 /**
  * 平台检测组合式函数
  */
 export function usePlatform(): {
-  isMacOS: typeof isMacOS
-  isWindows: typeof isWindows
-  isLinux: typeof isLinux
-  titleBarHeight: number
-  showCustomControls: boolean
+  isMacOS: Ref<boolean>
+  isWindows: Ref<boolean>
+  isLinux: Ref<boolean>
+  titleBarHeight: ComputedRef<number>
+  showCustomControls: ComputedRef<boolean>
 } {
   const isMacOS = ref(false)
   const isWindows = ref(false)
   const isLinux = ref(false)
+
+  // 将其转换为 computed 属性，确保响应性
+  const titleBarHeight = computed(() => (isMacOS.value ? 60 : 40))
+  const showCustomControls = computed(() => isWindows.value)
 
   onMounted(() => {
     const platform = navigator.platform.toLowerCase()
@@ -32,8 +36,7 @@ export function usePlatform(): {
     isMacOS,
     isWindows,
     isLinux,
-    // 便捷的计算属性
-    titleBarHeight: isMacOS.value ? 60 : 40,
-    showCustomControls: isWindows.value
+    titleBarHeight,
+    showCustomControls
   }
 }

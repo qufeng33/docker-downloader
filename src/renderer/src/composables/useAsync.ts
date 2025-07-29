@@ -1,11 +1,24 @@
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, type Ref, type ComputedRef } from 'vue'
+
+/**
+ * 异步操作管理组合式函数的返回类型
+ */
+interface AsyncOperationReturn<T> {
+  isLoading: Ref<boolean>
+  error: Ref<Error | null>
+  data: Ref<T | null>
+  hasError: ComputedRef<boolean>
+  hasData: ComputedRef<boolean>
+  isIdle: ComputedRef<boolean>
+  execute: (asyncFn: () => Promise<T>) => Promise<T | null>
+  reset: () => void
+}
 
 /**
  * 异步操作管理组合式函数
  * 统一管理异步操作的加载状态、错误处理
  */
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function useAsyncOperation<T = unknown>() {
+export function useAsyncOperation<T = unknown>(): AsyncOperationReturn<T> {
   const isLoading = ref(false)
   const error = ref<Error | null>(null)
   const data = ref<T | null>(null)
@@ -51,7 +64,7 @@ export function useAsyncOperation<T = unknown>() {
     // 状态
     isLoading,
     error,
-    data,
+    data: data as Ref<T | null>,
     // 计算属性
     hasError,
     hasData,
@@ -63,11 +76,27 @@ export function useAsyncOperation<T = unknown>() {
 }
 
 /**
+ * IPC 调用组合式函数的返回类型
+ */
+interface IpcCallReturn<T> {
+  isLoading: Ref<boolean>
+  error: Ref<Error | null>
+  data: Ref<T | null>
+  hasError: ComputedRef<boolean>
+  hasData: ComputedRef<boolean>
+  isIdle: ComputedRef<boolean>
+  invoke: <K extends keyof typeof window.api.registry>(
+    channel: K,
+    ...args: Parameters<(typeof window.api.registry)[K]>
+  ) => Promise<T | null>
+  reset: () => void
+}
+
+/**
  * IPC 调用组合式函数
  * 专门用于处理 IPC 通信的异步操作
  */
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function useIpcCall<T = unknown>() {
+export function useIpcCall<T = unknown>(): IpcCallReturn<T> {
   const { isLoading, error, data, hasError, hasData, isIdle, execute, reset } =
     useAsyncOperation<T>()
 
