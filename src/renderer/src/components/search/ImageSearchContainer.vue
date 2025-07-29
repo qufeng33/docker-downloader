@@ -63,19 +63,25 @@
         </div>
       </div>
 
-      <!-- 搜索结果 -->
-      <div v-else-if="searchResults.length" class="search-results">
-        <!-- 结果列表 - 瀑布流布局 -->
-        <div class="results-grid">
-          <ImageSearchResultCard
-            v-for="image in searchResults"
-            :key="image.name"
-            :image="image"
-            @view-details="viewImageDetails"
-            @add-to-download="addToDownloadList"
-          />
-        </div>
-      </div>
+      <!-- 搜索结果 - 瀑布流布局 -->
+      <TransitionGroup v-else-if="searchResults.length" name="list" tag="div" class="results-grid">
+        <masonry-wall
+          :key="searchResults.length"
+          :items="searchResults"
+          :column-width="400"
+          :gap="20"
+        >
+          <template #default="{ item }">
+            <ImageSearchResultCard
+              :image="item"
+              :is-expanded="expandedCardName === item.name"
+              @toggle-expand="handleToggleExpand"
+              @view-details="viewImageDetails"
+              @add-to-download="addToDownloadList"
+            />
+          </template>
+        </masonry-wall>
+      </TransitionGroup>
 
       <!-- 无结果 -->
       <div v-else-if="!isSearching && searchResults.length === 0" class="no-results">
@@ -95,6 +101,7 @@
 import { ref } from 'vue'
 import { ElInput, ElButton, ElIcon, ElTag, ElSkeleton } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
+import MasonryWall from '@yeger/vue-masonry-wall'
 import ImageSearchResultCard from './ImageSearchResultCard.vue'
 import type { DockerImage } from '@/types'
 
@@ -102,7 +109,8 @@ import type { DockerImage } from '@/types'
 const searchQuery = ref('')
 const isSearching = ref(false)
 const searchResults = ref<DockerImage[]>([])
-const searchInitiated = ref(false) // 核心状态：是否已发起过搜索
+const searchInitiated = ref(false)
+const expandedCardName = ref<string | null>(null)
 
 // 热门镜像建议
 const popularImages = [
@@ -122,26 +130,34 @@ const popularImages = [
   'httpd'
 ]
 
+// 卡片展开逻辑
+const handleToggleExpand = (imageName: string): void => {
+  if (expandedCardName.value === imageName) {
+    expandedCardName.value = null
+  } else {
+    expandedCardName.value = imageName
+  }
+}
+
 // 清空搜索
 const clearSearch = (): void => {
   searchQuery.value = ''
   searchResults.value = []
   isSearching.value = false
-  searchInitiated.value = false // 恢复到初始居中状态
+  searchInitiated.value = false
+  expandedCardName.value = null
 }
 
 const performSearch = async (): Promise<void> => {
   if (!searchQuery.value.trim()) return
 
-  searchInitiated.value = true // 标记搜索已开始，触发位移动画
+  expandedCardName.value = null
+  searchInitiated.value = true
   isSearching.value = true
-  searchResults.value = [] // 清空旧结果
+  searchResults.value = []
 
   try {
-    // 模拟搜索API调用
     await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    // 模拟搜索结果
     const mockResults: DockerImage[] = [
       {
         name: searchQuery.value,
@@ -151,7 +167,7 @@ const performSearch = async (): Promise<void> => {
         isOfficial: Math.random() > 0.5,
         isVerified: Math.random() > 0.3,
         updatedAt: new Date().toISOString(),
-        tags: ['latest', 'alpine', 'stable', 'lts'],
+        tags: ['latest', 'alpine', 'stable', 'lts', 'v1.2', 'v1.3', 'v1.4'],
         architectures: ['amd64', 'arm64', 'arm/v7']
       },
       {
@@ -175,6 +191,17 @@ const performSearch = async (): Promise<void> => {
         updatedAt: new Date(Date.now() - 172800000).toISOString(),
         tags: ['latest', 'debian-11', 'ubuntu-20.04'],
         architectures: ['amd64', 'arm64']
+      },
+      {
+        name: `another/long-name-for-${searchQuery.value}`,
+        description: `Another community image for ${searchQuery.value} with a very long description to test wrapping and layout changes in the card component.`,
+        pulls: Math.floor(Math.random() * 100000),
+        stars: Math.floor(Math.random() * 50),
+        isOfficial: false,
+        isVerified: false,
+        updatedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+        tags: ['latest', 'dev', 'test'],
+        architectures: ['amd64']
       }
     ]
     searchResults.value = mockResults
@@ -197,10 +224,19 @@ const addToDownloadList = (image: DockerImage): void => {
 </script>
 
 <style scoped>
-/* 搜索页面 */
-.search-page {
-  max-width: 1200px;
-  margin: 0 auto;
+/* 瀑布流动画 */
+.list-move,
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: scale(0.01) translateY(30px);
+}
+.list-leave-active {
+  position: absolute;
 }
 
 /* 主搜索区域 - 作为定位和动画容器 */
@@ -381,14 +417,6 @@ const addToDownloadList = (image: DockerImage): void => {
   }
 }
 
-/* 结果网格 */
-.results-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  gap: 20px;
-  width: 100%;
-}
-
 /* 加载状态 */
 .loading-skeleton {
   display: grid;
@@ -431,7 +459,6 @@ const addToDownloadList = (image: DockerImage): void => {
 
 /* 响应式设计 */
 @media (max-width: 1200px) {
-  .results-grid,
   .loading-skeleton {
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 16px;
@@ -439,7 +466,6 @@ const addToDownloadList = (image: DockerImage): void => {
 }
 
 @media (max-width: 768px) {
-  .results-grid,
   .loading-skeleton {
     grid-template-columns: 1fr;
     gap: 12px;

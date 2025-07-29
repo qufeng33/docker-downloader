@@ -130,7 +130,8 @@ onMounted(() => {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 9999; /* 确保 Header 永远在最顶层 */
+  background-color: v-bind('THEME_COLORS.DRAG_AREA_BACKGROUND'); /* 核心：添加不透明背景 */
 }
 
 /* macOS 平台特定样式 */

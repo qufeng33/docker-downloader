@@ -1,5 +1,5 @@
 <template>
-  <div class="image-result-card" :class="{ expanded: isExpanded }" @click="toggleExpand">
+  <div class="image-result-card" :class="{ expanded: isExpanded }" @click="onCardClick">
     <!-- 基础信息 -->
     <div class="card-header">
       <div class="image-basic-info">
@@ -72,14 +72,18 @@ import { ElTag, ElButton } from 'element-plus'
 import type { DockerImage } from '@/types'
 import { formatNumber, formatDate } from '@/utils/formatters'
 
-const props = defineProps<{ image: DockerImage }>()
-const emit = defineEmits(['view-details', 'add-to-download'])
+const props = defineProps<{
+  image: DockerImage
+  isExpanded: boolean
+}>()
 
-const isExpanded = ref(false)
+const emit = defineEmits(['view-details', 'add-to-download', 'toggle-expand'])
+
 const showAllTags = ref(false)
 
-const toggleExpand = (): void => {
-  isExpanded.value = !isExpanded.value
+const onCardClick = (): void => {
+  // 通知父组件处理展开逻辑
+  emit('toggle-expand', props.image.name)
 }
 
 const toggleTagsDisplay = (): void => {
@@ -102,7 +106,7 @@ const displayTags = computed(() => {
 </script>
 
 <style scoped>
-/* 镜像结果卡片 - 独立卡片样式 */
+/* 样式保持不变 */
 .image-result-card {
   background: white;
   border: 1px solid #e5e7eb;
@@ -133,7 +137,6 @@ const displayTags = computed(() => {
   transform: translateY(-1px);
 }
 
-/* 卡片头部 */
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -184,7 +187,6 @@ const displayTags = computed(() => {
   white-space: nowrap;
 }
 
-/* 统计信息 */
 .card-stats {
   display: flex;
   gap: 24px;
@@ -215,7 +217,6 @@ const displayTags = computed(() => {
   line-height: 1;
 }
 
-/* 展开内容 */
 .card-expanded-content {
   margin-top: 16px;
   padding-top: 16px;
