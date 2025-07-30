@@ -1,0 +1,142 @@
+/**
+ * 设计令牌 (Design Tokens)
+ * 统一管理所有设计决策，提供一致的设计语言
+ */
+
+:root {
+  /* ===== 间距系统 (8px 基准) ===== */
+  --spacing-xs: 4px;    /* 0.5x */
+  --spacing-sm: 8px;    /* 1x 基准单位 */
+  --spacing-md: 16px;   /* 2x */
+  --spacing-lg: 24px;   /* 3x */
+  --spacing-xl: 32px;   /* 4x */
+  --spacing-2xl: 48px;  /* 6x */
+  --spacing-3xl: 64px;  /* 8x */
+  --spacing-4xl: 80px;  /* 10x */
+
+  /* ===== 字体大小系统 ===== */
+  --font-size-xs: 11px;   /* 小标签 */
+  --font-size-sm: 12px;   /* 辅助文本 */
+  --font-size-base: 14px; /* 基础文本 */
+  --font-size-md: 16px;   /* 重要文本 */
+  --font-size-lg: 18px;   /* 标题 */
+  --font-size-xl: 20px;   /* 大标题 */
+  --font-size-2xl: 24px;  /* 图标 */
+  --font-size-3xl: 32px;  /* 大图标 */
+  --font-size-4xl: 48px;  /* 特大图标 */
+  --font-size-5xl: 64px;  /* 装饰图标 */
+
+  /* ===== 组件尺寸 ===== */
+  --component-height-sm: 32px;   /* 小按钮 */
+  --component-height-md: 40px;   /* 标准按钮 */
+  --component-height-lg: 48px;   /* 大按钮 */
+  --component-height-xl: 56px;   /* 搜索框 */
+
+  /* ===== 容器宽度 ===== */
+  --container-xs: 480px;
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+
+  /* ===== 圆角系统 ===== */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ===== 阴影系统 ===== */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 8px 10px rgba(0, 0, 0, 0.04);
+
+  /* ===== 动画时长 ===== */
+  --duration-fast: 0.15s;
+  --duration-normal: 0.3s;
+  --duration-slow: 0.5s;
+
+  /* ===== 动画缓动 ===== */
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ===== Z-index 层级 ===== */
+  --z-dropdown: 1000;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-header: 9999;
+
+  /* ===== 响应式断点 ===== */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* ===== 特定组件尺寸 ===== */
+  --header-height: 80px;
+  --header-padding-vertical: var(--spacing-lg);
+  --header-padding-horizontal: var(--spacing-xl);
+  
+  --brand-logo-size: 52px;
+  --action-button-size: var(--component-height-md);
+  
+  --search-input-height: var(--component-height-xl);
+  --search-container-padding: var(--spacing-4xl) var(--spacing-lg);
+  
+  --card-padding: var(--spacing-lg);
+  --card-radius: var(--radius-xl);
+  
+  /* ===== 滚动条样式 ===== */
+  --scrollbar-width: 8px;
+  --scrollbar-radius: var(--radius-lg);
+  --scrollbar-margin: var(--spacing-sm) 0;
+
+  /* ===== 窗口控制按钮 ===== */
+  --window-control-size: var(--component-height-sm);
+  --window-control-font-size: var(--font-size-sm);
+
+  /* ===== 占位内容 ===== */
+  --placeholder-height: 500px;
+  --placeholder-icon-size: var(--font-size-5xl);
+  --placeholder-padding: var(--spacing-4xl) var(--spacing-lg);
+
+  /* ===== 搜索相关 ===== */
+  --hero-search-min-height: 70vh;
+  --hero-search-active-height: 140px;
+  --search-results-max-width: 80%;
+  --popular-tag-padding: 6px 12px;
+
+  /* ===== 卡片相关 ===== */
+  --image-icon-size: var(--component-height-md);
+  --image-name-font-size: var(--font-size-md);
+  --image-description-font-size: 13px;
+  --stat-label-font-size: var(--font-size-xs);
+  --stat-value-font-size: var(--font-size-base);
+  --expanded-content-padding: var(--spacing-md);
+  --expanded-section-padding: var(--spacing-sm);
+  --tag-padding: 2px 8px;
+  --arch-badge-padding: var(--tag-padding);
+}
+
+/* ===== 暗色主题变量 ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* 在暗色主题下可能需要调整的值 */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* ===== 媒体查询工具 ===== */
+@custom-media --sm (min-width: 640px);
+@custom-media --md (min-width: 768px);
+@custom-media --lg (min-width: 1024px);
+@custom-media --xl (min-width: 1280px);
+@custom-media --2xl (min-width: 1536px);

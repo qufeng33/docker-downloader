@@ -164,16 +164,16 @@ onMounted(() => {
 }
 
 .window-control-btn {
-  width: 32px;
-  height: 32px;
+  width: var(--window-control-size);
+  height: var(--window-control-size);
   border: none;
   background: transparent;
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--window-control-font-size);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease;
+  transition: background-color var(--duration-fast) ease;
   margin: 0 1px;
 }
 
@@ -188,14 +188,14 @@ onMounted(() => {
 
 /* 顶部导航栏 */
 .top-navbar {
-  padding: 20px 32px;
+  padding: var(--header-padding-vertical) var(--header-padding-horizontal);
   background: v-bind('THEME_COLORS.CONTENT_BACKGROUND');
   border-bottom: 1px solid rgba(233, 236, 239, 0.3);
   backdrop-filter: blur(20px);
   -webkit-app-region: no-drag;
   display: flex;
   align-items: center;
-  min-height: 80px;
+  min-height: var(--header-height);
   position: relative;
 }
 
@@ -233,10 +233,10 @@ onMounted(() => {
 
 /* 品牌区域 */
 .brand-logo {
-  width: 52px;
-  height: 52px;
+  width: var(--brand-logo-size);
+  height: var(--brand-logo-size);
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #7c3aed 100%);
-  border-radius: 16px;
+  border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -257,7 +257,7 @@ onMounted(() => {
 }
 
 .docker-icon {
-  font-size: 24px;
+  font-size: var(--font-size-2xl);
   color: white;
 }
 
@@ -267,14 +267,14 @@ onMounted(() => {
 }
 
 .brand-name {
-  font-size: 18px;
+  font-size: var(--font-size-lg);
   font-weight: 700;
   color: #2c3e50;
   line-height: 1.2;
 }
 
 .brand-subtitle {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: #6c757d;
   line-height: 1.2;
 }
@@ -283,13 +283,13 @@ onMounted(() => {
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 8px;
+  gap: var(--spacing-sm);
+  padding: 10px var(--spacing-md);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--duration-fast) ease;
   color: #6c757d;
-  font-size: 14px;
+  font-size: var(--font-size-base);
   font-weight: 500;
 }
 
@@ -306,14 +306,14 @@ onMounted(() => {
 
 /* 右侧操作区 */
 .action-item {
-  width: 40px;
-  height: 40px;
+  width: var(--action-button-size);
+  height: var(--action-button-size);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--duration-normal) var(--ease-out);
   background: rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(226, 232, 240, 0.6);
   backdrop-filter: blur(8px);
@@ -327,9 +327,9 @@ onMounted(() => {
 }
 
 .action-icon {
-  font-size: 18px;
+  font-size: var(--font-size-lg);
   color: #64748b;
-  transition: color 0.3s ease;
+  transition: color var(--duration-normal) ease;
 }
 
 .action-item:hover .action-icon {

@@ -3,28 +3,44 @@
     <TheHeader v-model:active-tab="activeTab" />
 
     <div class="content-area">
-      <ImageSearchContainer v-if="activeTab === 'search'" />
+      <!-- 使用错误边界包装搜索组件 -->
+      <ErrorBoundary
+        v-if="activeTab === 'search'"
+        :auto-retry="true"
+        :max-retries="2"
+        @error="handleSearchError"
+        @retry="handleSearchRetry"
+      >
+        <ImageSearchContainer />
+      </ErrorBoundary>
 
       <!-- 其他页面占位 -->
-      <div v-else class="placeholder-page">
-        <div class="placeholder-content">
-          <div class="placeholder-icon">🚧</div>
-          <h2>{{ getTabTitle(activeTab) }}</h2>
-          <p>该功能正在开发中，敬请期待...</p>
+      <ErrorBoundary v-else @error="handlePageError">
+        <div class="placeholder-page">
+          <div class="placeholder-content">
+            <div class="placeholder-icon">🚧</div>
+            <h2>{{ getTabTitle(activeTab) }}</h2>
+            <p>该功能正在开发中，敬请期待...</p>
+          </div>
         </div>
-      </div>
+      </ErrorBoundary>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, inject } from 'vue'
 import { usePlatform } from '@/composables'
 import TheHeader from '@/components/layout/TheHeader.vue'
 import ImageSearchContainer from '@/components/search/ImageSearchContainer.vue'
+import ErrorBoundary from '@/components/ErrorBoundary.vue'
 import { THEME_COLORS } from '@shared/config/theme'
+import type { errorHandler } from '@/utils/errorHandler'
 
 const { isMacOS, isWindows } = usePlatform()
+
+// 注入错误处理器
+const globalErrorHandler = inject<typeof errorHandler>('errorHandler')
 
 // 当前活动标签
 const activeTab = ref('search')
@@ -38,6 +54,27 @@ const getTabTitle = (tab: string): string => {
     settings: '配置设置'
   }
   return titles[tab] || '未知页面'
+}
+
+// 错误处理
+const handleSearchError = (error: Error, _instance: unknown, info: string): void => {
+  console.log('搜索组件发生错误:', error.message)
+  globalErrorHandler?.logManualError(error, 'vue', {
+    component: 'SearchContainer',
+    info
+  })
+}
+
+const handleSearchRetry = (): void => {
+  console.log('搜索组件重试')
+}
+
+const handlePageError = (error: Error, _instance: unknown, info: string): void => {
+  console.log('页面组件发生错误:', error.message)
+  globalErrorHandler?.logManualError(error, 'vue', {
+    component: 'PlaceholderPage',
+    info
+  })
 }
 
 // 初始化滚动条行为
@@ -88,7 +125,7 @@ onMounted(() => {
 /* 内容区域 */
 .content-area {
   flex: 1; /* 占据所有剩余空间 */
-  padding: 32px;
+  padding: var(--spacing-xl);
   padding-top: 140px; /* 留出足够空间给 position:fixed 的 TheHeader */
   overflow-y: auto; /* 只在内容溢出时显示滚动条 */
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -99,7 +136,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 500px;
+  height: var(--placeholder-height);
 }
 
 .placeholder-content {
@@ -108,8 +145,8 @@ onMounted(() => {
 }
 
 .placeholder-icon {
-  font-size: 64px;
-  margin-bottom: 20px;
+  font-size: var(--placeholder-icon-size);
+  margin-bottom: var(--spacing-lg);
   opacity: 0.5;
 }
 
@@ -126,22 +163,22 @@ onMounted(() => {
 /* 响应式设计 */
 @media (max-width: 768px) {
   .content-area {
-    padding: 16px;
+    padding: var(--spacing-md);
   }
 }
 
 /* 自定义滚动条样式 */
 .home-view::-webkit-scrollbar,
 .content-area::-webkit-scrollbar {
-  width: 8px;
+  width: var(--scrollbar-width);
   background: transparent;
 }
 
 .home-view::-webkit-scrollbar-track,
 .content-area::-webkit-scrollbar-track {
   background: rgba(248, 250, 252, 0.8);
-  border-radius: 12px;
-  margin: 8px 0;
+  border-radius: var(--scrollbar-radius);
+  margin: var(--scrollbar-margin);
 }
 
 .home-view::-webkit-scrollbar-thumb,

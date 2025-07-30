@@ -7,12 +7,16 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 
 import App from './App.vue'
 import router from './router'
+import errorHandlerPlugin from './utils/errorHandler'
 
 // 创建 Vue 应用实例
 const app = createApp(App)
 
 // 创建 Pinia 实例
 const pinia = createPinia()
+
+// 注册全局错误处理器 (必须在其他插件之前)
+app.use(errorHandlerPlugin)
 
 // 注册 Pinia 状态管理
 app.use(pinia)
