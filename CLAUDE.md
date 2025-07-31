@@ -57,41 +57,102 @@ pnpm build:unpack # 构建但不打包
 
 ## 架构设计
 
-### 当前架构（electron-vite 基础模板）
+### 核心架构
 
-这是一个标准的 Electron 应用程序，包含三个主要进程：
+这是一个基于现代化技术栈的企业级 Electron 应用程序，采用三进程分离架构：
 
 **主进程** (`src/main/`)
-
 - 入口文件: `src/main/index.ts`
-- 创建浏览器窗口并处理系统级操作
-- 基础 IPC 设置，包含 ping/pong 测试处理器
+- 采用 NestJS 企业级架构，支持依赖注入和模块化设计
+- 包含业务模块：Registry（仓库管理）、Download（下载管理）、Auth（认证）、Config（配置）、Packaging（打包）
+- 使用装饰器驱动的 IPC 处理：`@IpcHandle()`、`@IpcOn()` 等
+- 基于 `@nestjs/event-emitter` 的事件驱动架构处理异步操作
 
 **预加载脚本** (`src/preload/`)
-
 - 入口文件: `src/preload/index.ts`
-- 通过 `contextBridge` 向渲染进程暴露安全 API
+- 通过 `contextBridge` 向渲染进程暴露类型安全的 API
+- 使用 `@doubleshot/nest-electron` 实现自动类型生成
 
 **渲染进程** (`src/renderer/`)
-
 - 入口文件: `src/renderer/src/main.ts`
-- 使用 TypeScript 的 Vue 3 应用程序
+- 基于 Vue 3 Composition API 的现代化前端架构
+- 集成 Element Plus UI 组件库和设计令牌系统
+- 使用 Pinia 进行状态管理，Vue Router 进行路由管理
+- 实现组合式函数（composables）系统用于逻辑复用
+- 内置全局错误处理机制
 
-### 计划架构（NestJS 企业级架构）
+### IPC 通信架构
 
-**NestJS 主进程架构**
-将采用企业级 NestJS 架构重构主进程：
-
-- **模块化设计** - Registry（仓库管理）、Download（下载管理）、Auth（认证）、Config（配置）、Packaging（打包）
-- **依赖注入容器** - 优雅管理服务间依赖关系
-- **装饰器驱动** - 使用 `@IpcHandle()`、`@IpcOn()` 等装饰器简化 IPC 定义
-- **事件驱动架构** - 基于 `@nestjs/event-emitter` 处理下载进度等异步事件
-
-**类型安全 IPC 通信**
-使用 `@doubleshot/nest-electron` 实现类型安全的 IPC 通信：
-
-- 自动类型生成，确保渲染进程和主进程的类型安全
+**类型安全通信**
+使用 `@doubleshot/nest-electron` 实现企业级 IPC 通信：
+- 自动类型生成，确保渲染进程和主进程的完整类型安全
 - 装饰器一致性，`@IpcHandle()` 如同 `@Get()` 一样的开发体验
+- 零样板代码，专注业务逻辑实现
+
+### 项目结构
+
+```
+src/
+├── main/                    # 主进程（NestJS 企业级架构）
+│   └── index.ts            # 主进程入口
+├── renderer/               # 渲染进程（Vue 3 + Element Plus）
+│   └── src/
+│       ├── components/     # Vue 组件
+│       │   ├── layout/     # 布局组件
+│       │   │   └── TheHeader.vue
+│       │   └── search/     # 搜索相关组件
+│       │       ├── ImageSearchContainer.vue
+│       │       └── ImageSearchResultCard.vue
+│       ├── views/          # 页面视图
+│       │   ├── HomeView.vue
+│       │   ├── SettingsView.vue
+│       │   └── TestView.vue
+│       ├── composables/    # 组合式函数
+│       │   ├── index.ts
+│       │   ├── useAsync.ts
+│       │   ├── usePlatform.ts
+│       │   ├── useTheme.ts
+│       │   └── useUtils.ts
+│       ├── stores/         # 状态管理（Pinia）
+│       │   ├── app.ts
+│       │   └── index.ts
+│       ├── router/         # 路由配置
+│       │   └── index.ts
+│       ├── utils/          # 工具函数
+│       │   ├── errorHandler.ts
+│       │   └── formatters.ts
+│       ├── types/          # 类型定义
+│       │   └── index.ts
+│       ├── assets/         # 静态资源和样式
+│       │   ├── design-tokens.css  # 设计令牌系统
+│       │   ├── base.css
+│       │   ├── main.css
+│       │   └── ...         # 其他资源文件
+│       ├── components/     # 通用组件
+│       │   └── ErrorBoundary.vue
+│       ├── App.vue         # 根组件
+│       └── main.ts         # 应用入口
+└── preload/                # Preload 脚本
+    └── index.ts            # 主 preload 脚本
+```
+
+### 架构特点
+
+**企业级前端架构：**
+- 基于 Vue 3 Composition API 的现代化组件开发
+- Element Plus UI 组件库提供企业级设计语言
+- 设计令牌系统确保视觉一致性
+- 组合式函数（composables）实现逻辑复用
+- Pinia 状态管理和 Vue Router 路由系统
+- 完整的工具函数和类型定义体系
+- 全局错误处理和边界保护机制
+
+**企业级后端架构：**
+- NestJS 依赖注入容器管理服务依赖关系
+- 模块化业务逻辑分离（Registry、Download、Auth 等）
+- 装饰器驱动的 IPC 处理简化通信复杂度
+- 事件驱动架构处理下载进度等异步场景
+- 类型安全的进程间通信保障数据完整性
 
 ## Element Plus UI 规范
 

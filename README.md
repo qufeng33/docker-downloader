@@ -121,10 +121,17 @@ docker-downloader/
 │   ├── renderer/               # 渲染进程（Vue 3）
 │   │   ├── src/
 │   │   │   ├── components/     # Vue 组件
+│   │   │   │   ├── layout/     # 布局组件
+│   │   │   │   └── search/     # 搜索相关组件
 │   │   │   ├── views/          # 页面视图
-│   │   │   ├── stores/         # 状态管理
+│   │   │   ├── composables/    # 组合式函数
+│   │   │   ├── stores/         # 状态管理（Pinia）
+│   │   │   ├── router/         # 路由配置
 │   │   │   ├── utils/          # 工具函数
 │   │   │   ├── types/          # 类型定义
+│   │   │   ├── assets/         # 静态资源和样式
+│   │   │   │   ├── design-tokens.css  # 设计令牌系统
+│   │   │   │   └── ...         # 其他样式文件
 │   │   │   ├── App.vue         # 根组件
 │   │   │   └── main.ts         # 应用入口
 │   │   └── index.html          # HTML 模板

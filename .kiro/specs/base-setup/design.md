@@ -23,6 +23,13 @@
 - NestJS 微服务基础框架
 - 最简单的 IPC 通信验证
 - Vue 3 + Element Plus 基础界面
+- Vue 3 Composition API 应用结构
+- Element Plus UI 组件集成
+- Pinia 状态管理
+- Vue Router 路由管理
+- 组合式函数（composables）系统
+- 设计令牌系统
+- 全局错误处理机制
 
 #### 第二阶段：核心模块简化实现
 
