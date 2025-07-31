@@ -131,3 +131,7 @@ config/production.json
 .vscode/
 !.vscode/settings.json.example
 !.vscode/extensions.json.example
+
+# Claude 配置文件
+.claude/settings.local.json
+
